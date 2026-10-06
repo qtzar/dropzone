@@ -138,3 +138,15 @@ describe('newGame', () => {
     expect(s.men).toHaveLength(MEN_PER_WAVE);
   });
 });
+
+describe('hazards on wave start', () => {
+  it('startWave clears magma, acid, bolts and nmeye bombs', () => {
+    const s = createGameState(1);
+    s.magma.push({ x: 0, y: 0, vx: 0, vy: 0, r: 5, hot: false });
+    s.acid.push({ x: 0, y: 0, vy: 1 });
+    s.bolts.push({ x: 0, top: 0, bottom: 1, life: 1 });
+    s.eyeBombs.push({ x: 0, y: 0, vy: 1 });
+    startWave(s, 2);
+    expect(s.magma.length + s.acid.length + s.bolts.length + s.eyeBombs.length).toBe(0);
+  });
+});

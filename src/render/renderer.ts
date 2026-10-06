@@ -1,6 +1,6 @@
 import { VIEW_W, toScreenX, lerpWrapped } from '../core/world';
 import type { GameState } from '../game/state';
-import { TRAIL_LIFE, TRAIL_RADIUS } from '../game/constants';
+import { TRAIL_LIFE, TRAIL_RADIUS, ACID_RADIUS, BOLT_WIDTH, EYE_BOMB_RADIUS } from '../game/constants';
 import type { View } from './canvas';
 import type { Camera } from './camera';
 import { Background } from './background';
@@ -53,6 +53,7 @@ export class CanvasRenderer implements Renderer {
     this.drawPlayer(ctx, s, cam.x, alpha);
     this.drawLasers(ctx, s, cam.x);
     this.drawShots(ctx, s, cam.x);
+    this.drawHazards(ctx, s, cam.x);
     if (fx) fx.drawWorld(ctx, cam.x);
     ctx.restore();
 
@@ -145,6 +146,50 @@ export class CanvasRenderer implements Renderer {
       ctx.beginPath();
       ctx.arc(sx, t.y, TRAIL_RADIUS, 0, Math.PI * 2);
       ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    ctx.globalCompositeOperation = 'source-over';
+  }
+
+  private glowDot(ctx: CanvasRenderingContext2D, sx: number, y: number, r: number, color: string): void {
+    ctx.fillStyle = color;
+    ctx.globalAlpha = 0.3;
+    ctx.beginPath();
+    ctx.arc(sx, y, r * 2.2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+    ctx.beginPath();
+    ctx.arc(sx, y, r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  private drawHazards(ctx: CanvasRenderingContext2D, s: GameState, camX: number): void {
+    ctx.globalCompositeOperation = 'lighter';
+    for (const m of s.magma) {
+      const sx = toScreenX(m.x, camX);
+      if (onScreen(sx, 30)) this.glowDot(ctx, sx, m.y, m.r, m.hot ? PALETTE.hotRock : PALETTE.magma);
+    }
+    for (const a of s.acid) {
+      const sx = toScreenX(a.x, camX);
+      if (!onScreen(sx, 20)) continue;
+      this.glowDot(ctx, sx, a.y, ACID_RADIUS, PALETTE.acid);
+      ctx.fillRect(sx - 1, a.y - ACID_RADIUS * 3, 2, ACID_RADIUS * 2);
+    }
+    const flash = Math.floor(s.time * 16) % 2 === 0;
+    for (const b of s.eyeBombs) {
+      const sx = toScreenX(b.x, camX);
+      if (onScreen(sx, 20)) this.glowDot(ctx, sx, b.y, EYE_BOMB_RADIUS, flash ? '#ffffff' : PALETTE.nmeye);
+    }
+    for (const b of s.bolts) {
+      const sx = toScreenX(b.x, camX);
+      if (!onScreen(sx, 40)) continue;
+      ctx.fillStyle = PALETTE.bolt;
+      ctx.globalAlpha = 0.25;
+      ctx.fillRect(sx - BOLT_WIDTH, b.top, BOLT_WIDTH * 2, b.bottom - b.top);
+      ctx.globalAlpha = 0.9;
+      ctx.fillRect(sx - BOLT_WIDTH / 2, b.top, BOLT_WIDTH, b.bottom - b.top);
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(sx - 1.5, b.top, 3, b.bottom - b.top);
     }
     ctx.globalAlpha = 1;
     ctx.globalCompositeOperation = 'source-over';

@@ -6,6 +6,7 @@ import { findMan } from '../query';
 import { getWaveTuning } from '../tuning';
 import { createEnemy } from '../entities/enemies';
 import { spawnMen } from './rescue';
+import { clearHazards } from './hazards';
 import { addScore } from './scoring';
 import {
   CEILING_Y, HUNTER_DELAY, HUNTER_REPEAT, MILESTONE_EVERY, MEN_PER_WAVE, MAX_BOMBS,
@@ -40,6 +41,7 @@ export function startWave(s: GameState, wave: number): void {
   s.enemies = [];
   s.shots = [];
   s.trails = [];
+  clearHazards(s);
   s.lasers = [];
   s.men = [];
   s.player.carryingId = null;

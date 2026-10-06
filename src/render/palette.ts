@@ -23,6 +23,8 @@ export const PALETTE = {
   magma: '#ff7a1a',
   hotRock: '#fff3c4',
   lake: '#3ff0ff',
+  acid: '#9dff3a',
+  bolt: '#d8f4ff',
   hud: '#9ad8ff',
   text: '#e8f6ff',
   warn: '#ff4d6d',

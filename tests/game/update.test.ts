@@ -76,3 +76,14 @@ describe('update', () => {
     expect(s.wave).toBe(2);
   });
 });
+
+describe('update hazards', () => {
+  it('moves hazards and lets them kill the player', () => {
+    const s = createGameState(1);
+    addEnemy(s, 'orb', 6000, 300);
+    s.acid.push({ x: s.player.x, y: s.player.y - 30, vy: 220 });
+    for (let i = 0; i < 30 && s.player.alive; i++) update(s, NO_ACTIONS, SIM_DT);
+    expect(s.player.alive).toBe(false);
+    expect(s.acid).toHaveLength(0);
+  });
+});

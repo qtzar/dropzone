@@ -8,6 +8,7 @@ import { resolveLaserHits, resolvePlayerHits, pruneDead } from './systems/combat
 import { tickCombo } from './systems/scoring';
 import { updateWaveTimers, checkWaveClear, updateWavePhase } from './systems/waves';
 import { updateCloak, triggerBomb, updateRespawn } from './systems/powerups';
+import { updateHazards, resolveHazardHits } from './systems/hazards';
 
 export function update(s: GameState, a: Actions, dt: number): void {
   if (s.phase === 'gameOver') return;
@@ -37,9 +38,11 @@ export function update(s: GameState, a: Actions, dt: number): void {
   updateEnemies(s, dt);
   updateShots(s, dt);
   updateTrails(s, dt);
+  updateHazards(s, dt);
   updateMen(s, dt);
   resolveLaserHits(s);
   resolvePlayerHits(s);
+  resolveHazardHits(s);
   checkCritical(s);
   tickCombo(s, dt);
   updateWaveTimers(s, dt);

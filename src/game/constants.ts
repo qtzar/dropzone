@@ -76,6 +76,15 @@ export const TRAILER_HOMER_CHANCE = 0.5;
 export const NMEYE_BOMB_INTERVAL = 0.6;
 export const ANTIMATTER_ORBIT_RADIUS = 80;
 
+// Hazards
+export const MAGMA_GRAVITY = 300;
+export const ACID_SPEED = 220;
+export const ACID_RADIUS = 4;
+export const BOLT_WIDTH = 12;
+export const BOLT_LIFE = 0.25;
+export const EYE_BOMB_SPEED = 180;
+export const EYE_BOMB_RADIUS = 5;
+
 // Waves
 export const MILESTONE_EVERY = 5;
 export const WAVE_COMPLETE_TIME = 3;
