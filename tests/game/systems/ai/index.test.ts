@@ -122,12 +122,12 @@ describe('drifters and trailers', () => {
     expect(e.vy).toBeGreaterThan(0);
   });
 
-  it('trailer leaves trail segments', () => {
+  it('trailer no longer leaves trail segments', () => {
     const s = createGameState(1);
     const e = addEnemy(s, 'trailer', 3000, 300);
     e.fireTimer = Infinity;
     tick(s, 0.5);
-    expect(s.trails.length).toBeGreaterThan(3);
+    expect(s.trails).toHaveLength(0);
   });
 });
 

@@ -5,6 +5,7 @@ import { findMan, findEnemy } from '../query';
 import { createEnemy, convertEnemy, killPoints } from '../entities/enemies';
 import { laserHitsCircle, circlesOverlap } from './collision';
 import { registerKill, resetCombo } from './scoring';
+import { releaseTrailers, trailerHeadHit } from './ai/spawners';
 import {
   HITSTOP_MULTI, HITSTOP_HUNTER, PLAYER_RADIUS, MAN_RADIUS, TRAIL_RADIUS, RESPAWN_DELAY,
 } from '../constants';
@@ -51,6 +52,8 @@ export function killEnemy(s: GameState, e: Enemy): void {
     }
   }
 
+  if (e.kind === 'spore') releaseTrailers(s, e);
+
   if (e.kind === 'orb') {
     for (let i = 0; i < ORB_FRAGMENTS; i++) {
       const a = (i / ORB_FRAGMENTS) * Math.PI * 2 + range(s.rng, 0, 0.5);
@@ -74,9 +77,14 @@ export function resolveLaserHits(s: GameState): void {
     for (const e of s.enemies) {
       if (e.dead) continue;
       if (laserHitsCircle(l, e.x, e.y, e.radius)) {
+        l.life = 0;
+        if (e.kind === 'trailer' && !trailerHeadHit(l, e)) {
+          // Tail hit: the laser is absorbed and the Trailer survives.
+          emit(s, { type: 'laserBlocked', x: e.x, y: e.y });
+          break;
+        }
         killEnemy(s, e);
         kills++;
-        l.life = 0;
         break;
       }
     }

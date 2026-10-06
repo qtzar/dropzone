@@ -127,6 +127,18 @@ export class CanvasRenderer implements Renderer {
         }
         continue;
       }
+      if (e.kind === 'trailer') {
+        // Dim tail behind the bright head: only head hits kill.
+        const v = Math.hypot(e.vx, e.vy) || 1;
+        ctx.strokeStyle = PALETTE.trailer;
+        ctx.globalAlpha = 0.35;
+        ctx.lineWidth = 6;
+        ctx.beginPath();
+        ctx.moveTo(sx, e.y);
+        ctx.lineTo(sx - (e.vx / v) * 26, e.y - (e.vy / v) * 26);
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+      }
       const angle = e.kind === 'antimatter' ? s.time * 6 : 0;
       drawSprite(ctx, this.sprites[e.kind], sx, e.y, e.vx < 0, 1, angle);
     }

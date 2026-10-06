@@ -5,16 +5,16 @@ import { groundYAt } from '../../terrain';
 import { findMan } from '../../query';
 import { convertEnemy, resetFireTimer } from '../../entities/enemies';
 import {
-  CEILING_Y, SNATCH_CARRY_OFFSET, SNATCH_GRACE, TRAIL_LIFE, TRAIL_INTERVAL,
+  CEILING_Y, SNATCH_CARRY_OFFSET, SNATCH_GRACE,
   ENEMY_SHOT_SPEED, ENEMY_SHOT_LIFE, ENEMY_FIRE_RANGE,
 } from '../../constants';
 import { playerVisible, homeOnPlayer } from './common';
 import { updatePlanter, updateAndroid } from './planter';
 import { updateNemesite, updateNmeye, updateAntimatter } from './homers';
+import { updateTrailer } from './spawners';
 
 const SNATCHER_SEEK_RANGE = 2500;
 const GRAB_DISTANCE = 10;
-const TRAILER_AMPLITUDE = 80;
 
 /** Grace period over, abductor cap not reached, and at least one man is walking. */
 function canPickTarget(s: GameState, e: Enemy): boolean {
@@ -95,17 +95,6 @@ function updateSnatcher(s: GameState, e: Enemy): void {
   }
   e.vx = (dx / dist) * e.speed;
   e.vy = (dy / dist) * e.speed;
-}
-
-function updateTrailer(s: GameState, e: Enemy, dt: number): void {
-  e.vx = Math.sign(e.vx || 1) * e.speed;
-  const targetY = e.homeY + Math.sin(e.phase * 2.5) * TRAILER_AMPLITUDE;
-  e.vy = (targetY - e.y) * 6;
-  e.trailTimer -= dt;
-  if (e.trailTimer <= 0) {
-    s.trails.push({ x: e.x, y: e.y, life: TRAIL_LIFE });
-    e.trailTimer = TRAIL_INTERVAL;
-  }
 }
 
 function integrate(s: GameState, e: Enemy, dt: number): void {

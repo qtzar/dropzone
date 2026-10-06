@@ -97,6 +97,9 @@ export const NMEYE_TURN_MAX = 0.9;
 export const NMEYE_WOBBLE = 1;
 export const ANTIMATTER_DRIFT = 160;
 export const ANTIMATTER_SPIN = 3;
+export const TRAILER_TURN_RATE = 1.5;
+export const TRAILER_AMPLITUDE = 80;
+export const SPORE_TRAILERS = 4;
 
 // Volcanoes (normal magma, and white-hot rocks while the planet is unstable)
 export const MAGMA_RADIUS = 5;
