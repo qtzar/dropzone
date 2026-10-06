@@ -151,7 +151,7 @@ export class App {
 
     const s = this.state;
     if (this._scene === 'playing' || this._scene === 'gameOver') this.playEvents(s.events);
-    this.fx.consume(s.events, s);
+    this.fx.consume(s.events, s, this.camera.x);
     s.events.length = 0;
 
     if (this._scene !== 'paused') {

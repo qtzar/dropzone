@@ -104,3 +104,28 @@ describe('Effects phase 2 events', () => {
     expect(fx.flash).toBeGreaterThan(0);
   });
 });
+
+describe('Effects proton bolt flash', () => {
+  const bolt: GameEvent = { type: 'protonBolt', x: 1000, top: 0, bottom: 600 };
+
+  it('an off-screen bolt does not flash', () => {
+    const fx = new Effects();
+    fx.consume([bolt], s, 1000 + 3000);
+    expect(fx.flash).toBe(0);
+  });
+
+  it('an on-screen bolt flashes', () => {
+    const fx = new Effects();
+    fx.consume([bolt], s, 1100);
+    expect(fx.flash).toBeGreaterThan(0);
+  });
+
+  it('a bolt during a bomb flash neither lowers it nor recolours it', () => {
+    const fx = new Effects();
+    fx.consume([{ type: 'bombDetonated', x: 1000, y: 300 }], s, 1000);
+    const colour = fx.flashTint;
+    fx.consume([bolt], s, 1000);
+    expect(fx.flash).toBe(1);
+    expect(fx.flashTint).toBe(colour);
+  });
+});

@@ -1,4 +1,4 @@
-import { VIEW_W, VIEW_H, toScreenX, wrapX } from '../core/world';
+import { VIEW_W, VIEW_H, toScreenX, wrapX, shortestDx } from '../core/world';
 import type { GameEvent } from '../game/events';
 import type { GameState } from '../game/state';
 import type { FxLayer } from './renderer';
@@ -45,6 +45,10 @@ export class Effects implements FxLayer {
 
   get trauma(): number {
     return this._trauma;
+  }
+
+  get flashTint(): string {
+    return this.flashColor;
   }
 
   get flash(): number {
@@ -105,7 +109,7 @@ export class Effects implements FxLayer {
     this.popups.push({ x, y, text, life: 1, color });
   }
 
-  consume(events: readonly GameEvent[], s: GameState): void {
+  consume(events: readonly GameEvent[], s: GameState, camX?: number): void {
     for (const e of events) {
       switch (e.type) {
         case 'explosion': {
@@ -190,8 +194,13 @@ export class Effects implements FxLayer {
           this.ring(e.x, e.y, 40, PALETTE.blunderstorm, 0.6);
           break;
         case 'protonBolt':
-          this._flash = Math.max(this._flash, 0.25);
-          this.flashColor = PALETTE.bolt;
+          if (camX === undefined || Math.abs(shortestDx(camX, e.x)) <= VIEW_W / 2 + 40) {
+            const boltFlash = 0.25;
+            if (boltFlash > this._flash) {
+              this._flash = boltFlash;
+              this.flashColor = PALETTE.bolt;
+            }
+          }
           for (let y = e.top; y < e.bottom; y += 18) {
             this.spawn(e.x, y, rand(-120, 120), rand(-40, 40), 0.3, 2, PALETTE.bolt, 3);
           }
