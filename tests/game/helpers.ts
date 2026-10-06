@@ -14,6 +14,8 @@ export function addMan(s: GameState, x: number, state: ManState = 'walking'): Ma
     fallStartY: 0,
     holderId: null,
     walkTimer: 10,
+    turnBacks: 0,
+    crossing: false,
   };
   s.men.push(m);
   return m;

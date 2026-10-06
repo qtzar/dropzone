@@ -41,6 +41,10 @@ export interface Man {
   /** Enemy id of the Android chasing him while chased. */
   holderId: number | null;
   walkTimer: number;
+  /** Times he has turned back at an obstacle edge since he last crossed one. */
+  turnBacks: number;
+  /** True while hopping over a lava ditch or wading through the lake. */
+  crossing: boolean;
 }
 
 export type EnemyKind = 'planter' | 'android' | 'nemesite' | 'spore' | 'trailer' | 'blunderstorm' | 'nmeye' | 'antimatter';

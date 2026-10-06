@@ -4,7 +4,7 @@ import { spawnMen, updateMen, canDeliver, checkUnstable, rescuePoints } from '..
 import { registerKill } from '../../../src/game/systems/scoring';
 import {
   SIM_DT, MAN_CARRY_OFFSET, MAN_SAFE_FALL, MAN_RADIUS, CATCH_POINTS, PLAYER_RADIUS,
-  MAN_WALK_SPEED, BASE_WIDTH,
+  MAN_WALK_SPEED, BASE_WIDTH, MAN_CROSS_AFTER, MAN_WADE_FACTOR,
 } from '../../../src/game/constants';
 import { groundYAt, BASE_GROUND_Y } from '../../../src/game/terrain';
 import { isLake, isLava } from '../../../src/game/landscape';
@@ -76,13 +76,13 @@ describe('walking to the base', () => {
     expect(shortestDx(WORLD_W - 300, m.x)).toBeCloseTo(MAN_WALK_SPEED, 0);
   });
 
-  it('turn back at the lake edge for 1-2 s, then head for the base again, never entering it', () => {
+  it('turn back at the lake edge for 1-2 s, then head for the base again, never entering it before the crossing turn', () => {
     const s = createGameState(1);
     testLandscape(s);
     const m = addMan(s, 4200);
     m.walkTimer = 0;
     let turned = false;
-    for (let t = 0; t < 12; t += SIM_DT) {
+    for (let t = 0; t < 4; t += SIM_DT) {
       updateMen(s, SIM_DT);
       expect(isLake(s.landscape, m.x)).toBe(false);
       if (m.dir === 1) {
@@ -317,5 +317,59 @@ describe('checkUnstable', () => {
     const s = createGameState(1);
     checkUnstable(s);
     expect(s.unstable).toBe(false);
+  });
+});
+
+describe('crossing obstacles', () => {
+  it('hops a lava ditch on the way to the base after turning back MAN_CROSS_AFTER times', () => {
+    const s = createGameState(1);
+    // Ditch at 3000 (~2968..3032); the base is at 640, so the path runs left through it.
+    s.landscape = { volcanoes: [], lakeX: 8000, ditches: [3000], craters: [] };
+    const m = addMan(s, 3060);
+    m.walkTimer = 0;
+    let maxTurnBacks = 0;
+    let crossed = false;
+    let liftedOverLava = true;
+    for (let t = 0; t < 30 && m.x > 2968; t += SIM_DT) {
+      updateMen(s, SIM_DT);
+      maxTurnBacks = Math.max(maxTurnBacks, m.turnBacks);
+      if (m.crossing) crossed = true;
+      if (isLava(s.landscape, m.x) && m.y >= groundYAt(s.terrain, m.x) - MAN_RADIUS) liftedOverLava = false;
+      expect(m.state).toBe('walking');
+    }
+    expect(maxTurnBacks).toBe(MAN_CROSS_AFTER);
+    expect(crossed).toBe(true);
+    expect(liftedOverLava).toBe(true);
+    expect(m.x).toBeLessThan(2968);
+    expect(m.crossing).toBe(false);
+    expect(m.turnBacks).toBe(0);
+  });
+
+  it('wades through the lake at reduced speed', () => {
+    const s = createGameState(1);
+    s.landscape = { volcanoes: [], lakeX: 3000, ditches: [], craters: [] };
+    const m = addMan(s, 3200);
+    m.walkTimer = 0;
+    let wadeStep = 0;
+    for (let t = 0; t < 120 && m.x > 2800; t += SIM_DT) {
+      const before = m.x;
+      updateMen(s, SIM_DT);
+      if (m.crossing && isLake(s.landscape, before) && isLake(s.landscape, m.x)) wadeStep = before - m.x;
+      expect(m.state).toBe('walking');
+    }
+    expect(m.x).toBeLessThan(2820);
+    expect(wadeStep).toBeCloseTo(MAN_WALK_SPEED * MAN_WADE_FACTOR * SIM_DT, 5);
+  });
+
+  it('a crossing man put down on normal ground stops crossing', () => {
+    const s = createGameState(1);
+    s.landscape = { volcanoes: [], lakeX: 8000, ditches: [3000], craters: [] };
+    const m = addMan(s, 5000);
+    m.crossing = true;
+    m.turnBacks = 2;
+    m.walkTimer = 0;
+    updateMen(s, SIM_DT);
+    expect(m.crossing).toBe(false);
+    expect(m.turnBacks).toBe(0);
   });
 });

@@ -116,3 +116,22 @@ describe('wave progression', () => {
     expect(s.score).toBeGreaterThan(0); // end-of-wave bonuses
   });
 });
+
+describe('idle waves end', () => {
+  it('with enemies cleared and the player idle, every man walks home and the wave completes', () => {
+    for (const seed of [1, 7, 42]) {
+      const s = newGame(seed);
+      s.lives = 99;
+      let t = 0;
+      while (s.phase === 'playing' && t < 900) {
+        s.enemies = [];
+        s.shots = [];
+        update(s, NO_ACTIONS, SIM_DT);
+        s.events.length = 0;
+        t += SIM_DT;
+      }
+      expect(s.phase).toBe('waveComplete');
+      expect(s.men.every((m) => m.state === 'saved')).toBe(true);
+    }
+  });
+});

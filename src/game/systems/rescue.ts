@@ -11,7 +11,7 @@ import { awardBonus } from './scoring';
 import {
   MAN_RADIUS, MAN_WALK_SPEED, MAN_FALL_GRAVITY, MAN_SAFE_FALL, MAN_CARRY_OFFSET,
   PLAYER_RADIUS, RESCUE_POINTS_PER_WAVE, RESCUE_POINTS_CAP, CATCH_POINTS, BASE_WIDTH, BASE_DELIVERY_HEIGHT,
-  MAN_TURN_MIN, MAN_TURN_MAX,
+  MAN_TURN_MIN, MAN_TURN_MAX, MAN_CROSS_AFTER, MAN_HOP_SPEED, MAN_HOP_HEIGHT, MAN_WADE_FACTOR,
 } from '../constants';
 
 const CATCH_SLOP = 4;
@@ -43,6 +43,8 @@ export function spawnMen(s: GameState, count: number): void {
       fallStartY: 0,
       holderId: null,
       walkTimer: 0,
+      turnBacks: 0,
+      crossing: false,
     });
   }
 }
@@ -67,15 +69,41 @@ function blockedAt(s: GameState, x: number): boolean {
   return isLake(s.landscape, x) || isLava(s.landscape, x);
 }
 
+/** Hops a lava ditch or wades the lake in his current direction; ends on normal ground. */
+function cross(s: GameState, m: Man, dt: number): void {
+  const wading = isLake(s.landscape, m.x) || isLake(s.landscape, wrapX(m.x + m.dir * 4));
+  const speed = wading ? MAN_WALK_SPEED * MAN_WADE_FACTOR : MAN_HOP_SPEED;
+  m.x = wrapX(m.x + m.dir * speed * dt);
+  const ground = groundYAt(s.terrain, m.x) - MAN_RADIUS;
+  if (!blockedAt(s, m.x)) {
+    m.crossing = false;
+    m.turnBacks = 0;
+    m.y = ground;
+    return;
+  }
+  m.y = isLava(s.landscape, m.x) ? ground - MAN_HOP_HEIGHT : ground;
+}
+
 /**
  * Walks toward the base by the shortest wrapped direction. At the edge of the lake or a lava
- * ditch the man turns back and walks away for 1-2 s (walkTimer), then heads for the base again.
+ * ditch he turns back and walks away for 1-2 s (walkTimer), then heads for the base again.
+ * After MAN_CROSS_AFTER turn-backs he crosses the obstacle instead (hop over lava, wade the lake).
  */
 function walk(s: GameState, m: Man, dt: number): void {
+  if (m.crossing) {
+    cross(s, m, dt);
+    return;
+  }
   if (m.walkTimer > 0) m.walkTimer = Math.max(0, m.walkTimer - dt);
   else m.dir = shortestDx(m.x, s.baseX) < 0 ? -1 : 1;
   const nx = wrapX(m.x + m.dir * MAN_WALK_SPEED * dt);
   if (blockedAt(s, nx) && !blockedAt(s, m.x)) {
+    if (m.walkTimer === 0 && m.turnBacks >= MAN_CROSS_AFTER) {
+      m.crossing = true;
+      cross(s, m, dt);
+      return;
+    }
+    m.turnBacks++;
     m.dir = m.dir === 1 ? -1 : 1;
     m.walkTimer = range(s.rng, MAN_TURN_MIN, MAN_TURN_MAX);
   } else {

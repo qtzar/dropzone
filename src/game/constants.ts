@@ -51,6 +51,14 @@ export const MAN_SAFE_FALL = 200;
 /** A man who reaches the lake or a lava ditch walks back for this long (s) before heading for the base again. */
 export const MAN_TURN_MIN = 1;
 export const MAN_TURN_MAX = 2;
+/** Turn-backs at an obstacle edge before a man crosses it anyway. */
+export const MAN_CROSS_AFTER = 2;
+/** Horizontal speed while hopping over a lava ditch. */
+export const MAN_HOP_SPEED = 90;
+/** Height a hopping man is lifted above a lava ditch. */
+export const MAN_HOP_HEIGHT = 16;
+/** Wading speed through the ionic lake, as a fraction of walking speed. */
+export const MAN_WADE_FACTOR = 0.6;
 export const MAN_CARRY_OFFSET = 26;
 /** Carried delivery scores 100 x wave, capped at 500. */
 export const RESCUE_POINTS_PER_WAVE = 100;
