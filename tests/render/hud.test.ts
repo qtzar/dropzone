@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { SCANNER, scannerPos, scannerTerrainOffsets, shieldLabel, waveBanner, BANNER_TIME, menTracker, TRACKER_COLORS } from '../../src/render/hud';
+import { SCANNER, scannerPos, scannerTerrainOffsets, shieldLabel, waveBanner, BANNER_TIME, menTracker, TRACKER_COLORS, livesDisplay } from '../../src/render/hud';
 import { createGameState } from '../../src/game/state';
 import { WORLD_W, VIEW_H } from '../../src/core/world';
 import { CEILING_Y } from '../../src/game/constants';
@@ -89,5 +89,17 @@ describe('menTracker', () => {
 
   it('uses the agreed colours', () => {
     expect(TRACKER_COLORS).toEqual({ onPlanet: '#3d8bff', danger: '#ffd23d', safe: '#4dff88', dead: '#ff3b3b' });
+  });
+});
+
+describe('livesDisplay', () => {
+  it('shows all ship icons with no label for lives <= 6', () => {
+    expect(livesDisplay(3)).toEqual({ icons: 3, label: null });
+    expect(livesDisplay(6)).toEqual({ icons: 6, label: null });
+  });
+
+  it('shows one ship icon plus a count label for lives > 6', () => {
+    expect(livesDisplay(7)).toEqual({ icons: 1, label: 'x7' });
+    expect(livesDisplay(12)).toEqual({ icons: 1, label: 'x12' });
   });
 });

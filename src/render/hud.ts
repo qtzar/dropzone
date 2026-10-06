@@ -170,10 +170,20 @@ export function shieldLabel(bank: number): string {
   return `SHIELD ${bank.toFixed(1)}s`;
 }
 
+/** Determine how to display lives: icons to draw and optional count label. */
+export function livesDisplay(lives: number): { icons: number; label: string | null } {
+  if (lives <= 6) {
+    return { icons: lives, label: null };
+  } else {
+    return { icons: 1, label: `x${lives}` };
+  }
+}
+
 function drawRightPanel(ctx: CanvasRenderingContext2D, s: GameState): void {
   const x0 = 1056;
+  const display = livesDisplay(s.lives);
   ctx.fillStyle = PALETTE.player;
-  for (let i = 0; i < Math.min(s.lives, 6); i++) {
+  for (let i = 0; i < display.icons; i++) {
     const x = x0 + i * 16;
     ctx.beginPath();
     ctx.moveTo(x, 24);
@@ -182,10 +192,11 @@ function drawRightPanel(ctx: CanvasRenderingContext2D, s: GameState): void {
     ctx.closePath();
     ctx.fill();
   }
-  if (s.lives > 6) {
+  if (display.label !== null) {
     ctx.font = 'bold 12px monospace';
     ctx.textAlign = 'left';
-    ctx.fillText(`x${s.lives}`, x0, 40);
+    ctx.fillStyle = PALETTE.player;
+    ctx.fillText(display.label, x0 + 18, 24);
   }
   ctx.strokeStyle = PALETTE.gold;
   ctx.lineWidth = 1.5;
