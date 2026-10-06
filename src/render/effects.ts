@@ -9,6 +9,8 @@ const SLOWMO_DURATION = 0.8;
 const SLOWMO_SCALE = 0.35;
 const SHAKE_MAX = 16;
 const PARTICLE_GRAVITY = 120;
+/** Minimum screen-shake trauma while the planet is unstable (the earthquake). */
+export const EARTHQUAKE_TRAUMA = 0.35;
 
 interface Particle {
   active: boolean;
@@ -174,6 +176,30 @@ export class Effects implements FxLayer {
         case 'laserBlocked':
           this.burst(e.x, e.y, PALETTE.laser, 8, 160);
           break;
+        case 'manWhistle':
+          this.popup(e.x, e.y - 26, 'HELP!', PALETTE.warn);
+          break;
+        case 'manSelfRescued':
+          this.burst(e.x, e.y, PALETTE.man, 24, 160);
+          this.popup(e.x, e.y - 30, 'SAFE', PALETTE.man);
+          break;
+        case 'nemesiteWarning':
+          this.ring(e.x, e.y, 50, PALETTE.nemesite, 0.4);
+          break;
+        case 'rumble':
+          this.ring(e.x, e.y, 40, PALETTE.blunderstorm, 0.6);
+          break;
+        case 'protonBolt':
+          this._flash = Math.max(this._flash, 0.25);
+          this.flashColor = PALETTE.bolt;
+          for (let y = e.top; y < e.bottom; y += 18) {
+            this.spawn(e.x, y, rand(-120, 120), rand(-40, 40), 0.3, 2, PALETTE.bolt, 3);
+          }
+          break;
+        case 'invasionWave':
+          this._flash = Math.max(this._flash, 0.3);
+          this.flashColor = PALETTE.trailer;
+          break;
         case 'nmeyeSpawned':
           this.ring(e.x, e.y, 90, PALETTE.nmeye, 0.5);
           break;
@@ -188,6 +214,7 @@ export class Effects implements FxLayer {
     this._trauma = Math.max(0, this._trauma - dt * 1.2);
     this._flash = Math.max(0, this._flash - dt * 2.5);
     this.slowmo = Math.max(0, this.slowmo - dt);
+    if (s.unstable) this._trauma = Math.max(this._trauma, EARTHQUAKE_TRAUMA);
     const simDt = dt * this.timeScale();
 
     const p = s.player;

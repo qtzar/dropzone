@@ -3,11 +3,21 @@ import type { SfxPlayer } from './sfx';
 
 export const LASER_THROTTLE = 0.05;
 export const SHOT_THROTTLE = 0.08;
+export const ERUPTION_THROTTLE = 0.4;
 
-/** Returns a function that plays the right SFX for a batch of game events. `now` is in seconds. */
-export function createEventAudio(sfx: SfxPlayer, now: () => number): (events: readonly GameEvent[]) => void {
+/**
+ * Returns a function that plays the right SFX for a batch of game events. `now` is in seconds.
+ * `near(x)` says whether a world x is close enough to the camera to hear local sounds
+ * (eruptions, storm rumbles and bolts); it defaults to hearing everything.
+ */
+export function createEventAudio(
+  sfx: SfxPlayer,
+  now: () => number,
+  near: (x: number) => boolean = () => true,
+): (events: readonly GameEvent[]) => void {
   let lastLaser = -Infinity;
   let lastShot = -Infinity;
+  let lastEruption = -Infinity;
   return (events) => {
     for (const e of events) {
       switch (e.type) {
@@ -60,7 +70,31 @@ export function createEventAudio(sfx: SfxPlayer, now: () => number): (events: re
           sfx.waveClear();
           break;
         case 'nmeyeSpawned':
-          sfx.hunter();
+          sfx.nmeyeWarning();
+          break;
+        case 'manWhistle':
+          sfx.whistle();
+          break;
+        case 'manSelfRescued':
+          sfx.selfRescue();
+          break;
+        case 'nemesiteWarning':
+          sfx.nemesiteWarning();
+          break;
+        case 'rumble':
+          if (near(e.x)) sfx.rumble();
+          break;
+        case 'protonBolt':
+          if (near(e.x)) sfx.boltCrack();
+          break;
+        case 'volcanoErupt':
+          if (near(e.x) && now() - lastEruption >= ERUPTION_THROTTLE) {
+            sfx.eruption();
+            lastEruption = now();
+          }
+          break;
+        case 'invasionWave':
+          sfx.invasion();
           break;
         default:
           break;

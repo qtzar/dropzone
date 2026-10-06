@@ -14,10 +14,19 @@ export interface SfxPlayer {
   klaxon(): void;
   cloak(on: boolean): void;
   waveClear(): void;
-  hunter(): void;
+  nmeyeWarning(): void;
+  whistle(): void;
+  nemesiteWarning(): void;
+  rumble(): void;
+  boltCrack(): void;
+  eruption(): void;
+  invasion(): void;
+  selfRescue(): void;
 }
 
 export class Sfx implements SfxPlayer {
+  private quake: { src: AudioBufferSourceNode; gain: GainNode } | null = null;
+
   constructor(private engine: AudioEngine) {}
 
   private tone(type: OscillatorType, f0: number, f1: number, dur: number, vol: number, delay = 0): void {
@@ -56,8 +65,8 @@ export class Sfx implements SfxPlayer {
     src.stop(t + dur + 0.02);
   }
 
-  private arpeggio(freqs: number[], type: OscillatorType, step: number, vol: number): void {
-    freqs.forEach((f, i) => this.tone(type, f, f, step * 1.5, vol, i * step));
+  private arpeggio(freqs: number[], type: OscillatorType, step: number, vol: number, delay = 0): void {
+    freqs.forEach((f, i) => this.tone(type, f, f, step * 1.5, vol, delay + i * step));
   }
 
   laser(): void {
@@ -119,8 +128,74 @@ export class Sfx implements SfxPlayer {
     this.arpeggio([392, 523, 659, 784, 1047], 'triangle', 0.1, 0.18);
   }
 
-  hunter(): void {
+  nmeyeWarning(): void {
     this.tone('sawtooth', 200, 800, 0.4, 0.07);
     this.tone('sawtooth', 200, 800, 0.4, 0.07, 0.45);
+  }
+
+  /** A man whistling for help: a rising then falling two-note whistle. */
+  whistle(): void {
+    this.tone('sine', 1800, 2500, 0.12, 0.08);
+    this.tone('sine', 2500, 1600, 0.18, 0.08, 0.15);
+  }
+
+  nemesiteWarning(): void {
+    this.tone('square', 880, 880, 0.07, 0.05);
+    this.tone('square', 880, 880, 0.07, 0.05, 0.12);
+  }
+
+  rumble(): void {
+    this.noise(0.8, 0.3, 320, 60);
+  }
+
+  boltCrack(): void {
+    this.noise(0.25, 0.6, 6000, 800);
+    this.tone('sawtooth', 1200, 100, 0.2, 0.08);
+  }
+
+  eruption(): void {
+    this.noise(0.5, 0.25, 900, 120);
+    this.tone('sine', 90, 40, 0.4, 0.15);
+  }
+
+  invasion(): void {
+    this.arpeggio([392, 494, 587, 784], 'sawtooth', 0.12, 0.08);
+    this.arpeggio([523, 659, 784, 1047], 'sawtooth', 0.12, 0.08, 0.5);
+  }
+
+  selfRescue(): void {
+    this.arpeggio([1047, 1319, 1568], 'sine', 0.06, 0.12);
+  }
+
+  /** Starts or stops the low earthquake rumble loop. Safe to call every frame. */
+  setQuake(on: boolean): void {
+    const { ctx, sfxBus } = this.engine;
+    if (on === (this.quake !== null)) return;
+    if (!on) {
+      const q = this.quake;
+      this.quake = null;
+      if (!q || !ctx) return;
+      try {
+        q.gain.gain.setTargetAtTime(0.0001, ctx.currentTime, 0.2);
+        q.src.stop(ctx.currentTime + 1);
+      } catch {
+        /* already stopped */
+      }
+      return;
+    }
+    const buf = this.engine.noiseBuffer();
+    if (!ctx || !sfxBus || !buf || !this.engine.ready) return;
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    src.loop = true;
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(140, ctx.currentTime);
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.35, ctx.currentTime + 0.5);
+    src.connect(filter).connect(gain).connect(sfxBus);
+    src.start();
+    this.quake = { src, gain };
   }
 }

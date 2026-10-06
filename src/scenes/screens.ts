@@ -6,7 +6,7 @@ import { PALETTE } from '../render/palette';
 export const INITIAL_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ ';
 
 /** Credit for the original game, shown on the title screen. */
-export const ORIGINAL_CREDIT = 'BASED ON DROPZONE (1984) BY ARCHER MACLEAN - ATARI 8-BIT / COMMODORE 64';
+export const ORIGINAL_CREDIT = 'BASED ON DROPZONE (1984) BY ARCHER MACLEAN - ARENA GRAPHICS / U.S. GOLD';
 export const TRIBUTE_NOTE = 'AN UNOFFICIAL FAN TRIBUTE';
 
 const CONTROLS = [

@@ -2,6 +2,7 @@ import { VIEW_W, VIEW_H, WORLD_W, SCANNER_H, shortestDx, clamp } from '../core/w
 import type { GameState } from '../game/state';
 import { CEILING_Y, COMBO_WINDOW, MAX_BOMBS } from '../game/constants';
 import { groundYAt } from '../game/terrain';
+import { isInvasionWave } from '../game/tuning';
 import { PALETTE } from './palette';
 
 export const SCANNER = { x: 240, y: 8, w: 800, h: 64 } as const;
@@ -133,8 +134,23 @@ function drawRightPanel(ctx: CanvasRenderingContext2D, s: GameState): void {
   meter(ctx, x0, 66, 200, s.player.heat, s.player.overheated ? PALETTE.warn : PALETTE.trailer, s.player.overheated ? 'OVERHEAT' : 'HEAT');
 }
 
+/** Seconds the wave-start banner stays up. */
+export const BANNER_TIME = 3;
+
+/** Banner shown at the start of a wave: "TRAILER INVASION" for invasions, otherwise "WAVE n". */
+export function waveBanner(s: GameState): string | null {
+  if (s.phase !== 'playing' || s.waveTime >= BANNER_TIME) return null;
+  return isInvasionWave(s.wave) ? 'TRAILER INVASION' : `WAVE ${s.wave}`;
+}
+
 function drawCenterMessages(ctx: CanvasRenderingContext2D, s: GameState): void {
   ctx.textAlign = 'center';
+  const banner = waveBanner(s);
+  if (banner !== null && (banner.startsWith('WAVE') || Math.floor(s.time * 4) % 2 === 0)) {
+    ctx.fillStyle = banner.startsWith('WAVE') ? PALETTE.text : PALETTE.trailer;
+    ctx.font = 'bold 36px monospace';
+    ctx.fillText(banner, VIEW_W / 2, 260);
+  }
   if (s.unstable && Math.floor(s.time * 3) % 2 === 0) {
     ctx.fillStyle = PALETTE.warn;
     ctx.font = 'bold 20px monospace';

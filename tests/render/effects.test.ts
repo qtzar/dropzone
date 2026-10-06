@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { Effects, MAX_PARTICLES } from '../../src/render/effects';
+import { Effects, MAX_PARTICLES, EARTHQUAKE_TRAUMA } from '../../src/render/effects';
 import { createGameState } from '../../src/game/state';
 import type { GameEvent } from '../../src/game/events';
 
@@ -71,5 +71,36 @@ describe('Effects volcano eruptions', () => {
     const fx = new Effects();
     fx.consume([{ type: 'volcanoErupt', x: 3000, y: 500, whiteHot: false }], s);
     expect(fx.activeParticleCount()).toBeGreaterThanOrEqual(14);
+  });
+});
+
+describe('Effects phase 2 events', () => {
+  it('the earthquake keeps the screen shaking while the planet is unstable', () => {
+    const fx = new Effects();
+    const unstable = { ...s, unstable: true, player: { ...s.player, thrusting: false } };
+    for (let i = 0; i < 200; i++) fx.update(0.016, unstable);
+    expect(fx.trauma).toBeGreaterThanOrEqual(EARTHQUAKE_TRAUMA);
+    expect(EARTHQUAKE_TRAUMA).toBeGreaterThanOrEqual(0.35);
+    for (let i = 0; i < 200; i++) fx.update(0.016, { ...unstable, unstable: false });
+    expect(fx.trauma).toBe(0);
+  });
+
+  it('a proton bolt flashes and sparks along its column', () => {
+    const fx = new Effects();
+    fx.consume([{ type: 'protonBolt', x: 1000, top: 150, bottom: 600 }], s);
+    expect(fx.flash).toBeGreaterThan(0);
+    expect(fx.activeParticleCount()).toBeGreaterThanOrEqual(20);
+  });
+
+  it('a self-rescue bursts in the men colour', () => {
+    const fx = new Effects();
+    fx.consume([{ type: 'manSelfRescued', x: 1000, y: 600 }], s);
+    expect(fx.activeParticleCount()).toBeGreaterThanOrEqual(24);
+  });
+
+  it('an invasion wave flashes the screen', () => {
+    const fx = new Effects();
+    fx.consume([{ type: 'invasionWave', wave: 5 }], s);
+    expect(fx.flash).toBeGreaterThan(0);
   });
 });

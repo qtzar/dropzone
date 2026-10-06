@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { createEventAudio, LASER_THROTTLE } from '../../src/audio/eventAudio';
+import { createEventAudio, LASER_THROTTLE, ERUPTION_THROTTLE } from '../../src/audio/eventAudio';
 import type { SfxPlayer } from '../../src/audio/sfx';
 import type { GameEvent } from '../../src/game/events';
 
@@ -9,7 +9,10 @@ function fakeSfx() {
   const sfx: SfxPlayer = {
     laser: rec('laser'), enemyShot: rec('enemyShot'), explosion: rec('explosion'), pickup: rec('pickup'),
     caught: rec('caught'), rescue: rec('rescue'), manLost: rec('manLost'), bomb: rec('bomb'), death: rec('death'),
-    extraLife: rec('extraLife'), klaxon: rec('klaxon'), cloak: rec('cloak'), waveClear: rec('waveClear'), hunter: rec('hunter'),
+    extraLife: rec('extraLife'), klaxon: rec('klaxon'), cloak: rec('cloak'), waveClear: rec('waveClear'),
+    nmeyeWarning: rec('nmeyeWarning'), whistle: rec('whistle'), nemesiteWarning: rec('nemesiteWarning'),
+    rumble: rec('rumble'), boltCrack: rec('boltCrack'), eruption: rec('eruption'), invasion: rec('invasion'),
+    selfRescue: rec('selfRescue'),
   };
   return { sfx, calls };
 }
@@ -39,6 +42,46 @@ describe('createEventAudio', () => {
     ]);
   });
 
+  it('maps the phase 2 events to their new sounds', () => {
+    const { sfx, calls } = fakeSfx();
+    createEventAudio(sfx, () => 0)([
+      { type: 'nmeyeSpawned', x: 0, y: 0 },
+      { type: 'manWhistle', x: 0, y: 0 },
+      { type: 'manSelfRescued', x: 0, y: 0 },
+      { type: 'nemesiteWarning', x: 0, y: 0 },
+      { type: 'rumble', x: 0, y: 0 },
+      { type: 'protonBolt', x: 0, top: 100, bottom: 600 },
+      { type: 'volcanoErupt', x: 0, y: 500, whiteHot: false },
+      { type: 'invasionWave', wave: 5 },
+    ]);
+    expect(calls).toEqual([
+      'nmeyeWarning', 'whistle', 'selfRescue', 'nemesiteWarning', 'rumble', 'boltCrack', 'eruption', 'invasion',
+    ]);
+  });
+
+  it('only plays eruptions, rumbles and bolts that are near the camera', () => {
+    const { sfx, calls } = fakeSfx();
+    const play = createEventAudio(sfx, () => 0, (x) => x < 1000);
+    play([
+      { type: 'rumble', x: 5000, y: 0 },
+      { type: 'protonBolt', x: 5000, top: 100, bottom: 600 },
+      { type: 'volcanoErupt', x: 5000, y: 500, whiteHot: true },
+      { type: 'rumble', x: 500, y: 0 },
+    ]);
+    expect(calls).toEqual(['rumble']);
+  });
+
+  it('throttles eruption sounds', () => {
+    const { sfx, calls } = fakeSfx();
+    let t = 0;
+    const play = createEventAudio(sfx, () => t);
+    const erupt: GameEvent = { type: 'volcanoErupt', x: 0, y: 500, whiteHot: false };
+    play([erupt, erupt]);
+    t = ERUPTION_THROTTLE * 1.5;
+    play([erupt]);
+    expect(calls.filter((c) => c === 'eruption')).toHaveLength(2);
+  });
+
   it('does not play an explosion sound for the player (death covers it)', () => {
     const { sfx, calls } = fakeSfx();
     createEventAudio(sfx, () => 0)([{ type: 'explosion', x: 0, y: 0, source: 'player', big: true }]);
@@ -56,13 +99,5 @@ describe('createEventAudio', () => {
     t = LASER_THROTTLE * 1.5;
     play([laser]);
     expect(calls.filter((c) => c === 'laser')).toHaveLength(2);
-  });
-});
-
-describe('createEventAudio nmeye', () => {
-  it('plays the warning sting when an Nmeye appears', () => {
-    const { sfx, calls } = fakeSfx();
-    createEventAudio(sfx, () => 0)([{ type: 'nmeyeSpawned', x: 0, y: 0 }]);
-    expect(calls).toEqual(['hunter']);
   });
 });

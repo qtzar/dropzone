@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { SCANNER, scannerPos, scannerTerrainOffsets, shieldLabel } from '../../src/render/hud';
+import { SCANNER, scannerPos, scannerTerrainOffsets, shieldLabel, waveBanner, BANNER_TIME } from '../../src/render/hud';
+import { createGameState } from '../../src/game/state';
 import { WORLD_W, VIEW_H } from '../../src/core/world';
 import { CEILING_Y } from '../../src/game/constants';
 
@@ -41,5 +42,30 @@ describe('shieldLabel', () => {
     expect(shieldLabel(12.4)).toBe('SHIELD 12.4s');
     expect(shieldLabel(7)).toBe('SHIELD 7.0s');
     expect(shieldLabel(0)).toBe('SHIELD 0.0s');
+  });
+});
+
+describe('waveBanner', () => {
+  it('announces the wave for the first 3 s', () => {
+    const s = createGameState(1);
+    s.wave = 4;
+    s.waveTime = 1;
+    expect(waveBanner(s)).toBe('WAVE 4');
+    s.waveTime = BANNER_TIME;
+    expect(waveBanner(s)).toBeNull();
+  });
+
+  it('announces a Trailer invasion on invasion waves', () => {
+    const s = createGameState(1);
+    s.wave = 10;
+    s.waveTime = 0.5;
+    expect(waveBanner(s)).toBe('TRAILER INVASION');
+  });
+
+  it('shows nothing outside play', () => {
+    const s = createGameState(1);
+    s.wave = 2;
+    s.phase = 'waveComplete';
+    expect(waveBanner(s)).toBeNull();
   });
 });

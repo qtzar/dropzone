@@ -1,5 +1,5 @@
 import { NO_ACTIONS, consumeEdges, type Actions } from '../core/input';
-import { clamp, lerpWrapped } from '../core/world';
+import { VIEW_W, clamp, lerpWrapped, shortestDx } from '../core/world';
 import type { GameState } from '../game/state';
 import { update } from '../game/update';
 import { newGame } from '../game/systems/waves';
@@ -49,7 +49,12 @@ export class App {
   private gameOverTimer = 0;
   private audio = new AudioEngine();
   private music = new Music(this.audio);
-  private playEvents = createEventAudio(new Sfx(this.audio), () => performance.now() / 1000);
+  private sfx = new Sfx(this.audio);
+  private playEvents = createEventAudio(
+    this.sfx,
+    () => performance.now() / 1000,
+    (x) => Math.abs(shortestDx(this.camera.x, x)) <= VIEW_W,
+  );
 
   constructor(
     private renderer: AppRenderer,
@@ -154,6 +159,7 @@ export class App {
       updateCamera(this.camera, lerpWrapped(s.player.prevX, s.player.x, alpha), s.player.facing, frameDt);
     }
     this.music.setIntensity(s.unstable ? 2 : s.wave >= 5 ? 1 : 0);
+    this.sfx.setQuake(this._scene === 'playing' && s.unstable);
     this.renderer.render(s, this.camera, alpha, this.fx);
     this.drawScreens();
   }
