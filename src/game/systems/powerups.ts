@@ -1,6 +1,6 @@
 import type { Actions } from '../../core/input';
-import { VIEW_W, shortestDx } from '../../core/world';
-import type { GameState } from '../state';
+import { VIEW_W, CAMERA_LEAD, wrapX, shortestDx } from '../../core/world';
+import type { GameState, Enemy } from '../state';
 import { emit } from '../events';
 import { killEnemy } from './combat';
 import { CLOAK_DRAIN, CEILING_Y, RESPAWN_INVULN, HITSTOP_MULTI } from '../constants';
@@ -20,9 +20,19 @@ export function triggerBomb(s: GameState): boolean {
   if (s.bombs <= 0 || !p.alive) return false;
   s.bombs--;
   const range = VIEW_W / 2;
-  const targets = s.enemies.filter((e) => !e.dead && Math.abs(shortestDx(p.x, e.x)) <= range + e.radius);
-  for (const e of targets) killEnemy(s, e);
-  s.shots = s.shots.filter((sh) => Math.abs(shortestDx(p.x, sh.x)) > range);
+  const cx = wrapX(p.x + p.facing * CAMERA_LEAD);
+  const targets: Enemy[] = [];
+  // Repeat until stable: bombed orbs spawn fragments that may also be in range.
+  for (let found = true; found; ) {
+    found = false;
+    for (const e of s.enemies.slice()) {
+      if (e.dead || Math.abs(shortestDx(cx, e.x)) > range + e.radius) continue;
+      killEnemy(s, e);
+      targets.push(e);
+      found = true;
+    }
+  }
+  s.shots = s.shots.filter((sh) => Math.abs(shortestDx(cx, sh.x)) > range);
   if (targets.length >= 2) s.hitStop = Math.max(s.hitStop, HITSTOP_MULTI);
   emit(s, { type: 'bombDetonated', x: p.x, y: p.y });
   return true;

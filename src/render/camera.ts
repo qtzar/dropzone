@@ -1,4 +1,6 @@
-import { VIEW_W, wrapX, shortestDx } from '../core/world';
+import { CAMERA_LEAD, wrapX, shortestDx } from '../core/world';
+
+export { CAMERA_LEAD };
 
 export interface Camera {
   /** World x at the horizontal centre of the screen. */
@@ -6,7 +8,6 @@ export interface Camera {
   lead: number;
 }
 
-export const CAMERA_LEAD = VIEW_W * 0.18;
 const LEAD_RATE = 2.5;
 const FOLLOW_RATE = 8;
 

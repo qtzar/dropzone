@@ -3,6 +3,8 @@ export const VIEW_H = 720;
 export const WORLD_W = VIEW_W * 8;
 /** Height of the scanner/HUD strip at the top of the screen. */
 export const SCANNER_H = 80;
+/** How far the camera leads the player in the facing direction. */
+export const CAMERA_LEAD = VIEW_W * 0.18;
 
 export function clamp(v: number, lo: number, hi: number): number {
   return v < lo ? lo : v > hi ? hi : v;

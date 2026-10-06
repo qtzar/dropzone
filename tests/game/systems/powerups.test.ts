@@ -3,6 +3,7 @@ import { createGameState } from '../../../src/game/state';
 import { NO_ACTIONS } from '../../../src/core/input';
 import { updateCloak, triggerBomb, updateRespawn, RESPAWN_Y } from '../../../src/game/systems/powerups';
 import { CLOAK_DRAIN, RESPAWN_DELAY, RESPAWN_INVULN, START_BOMBS, HITSTOP_MULTI } from '../../../src/game/constants';
+import { CAMERA_LEAD } from '../../../src/core/world';
 import { addEnemy } from '../helpers';
 
 const CLOAK = { ...NO_ACTIONS, cloak: true };
@@ -45,7 +46,7 @@ describe('triggerBomb', () => {
   it('kills on-screen enemies, spares distant ones, clears nearby shots', () => {
     const s = createGameState(1);
     const near1 = addEnemy(s, 'snatcher', s.player.x + 300, 300);
-    const near2 = addEnemy(s, 'nemesite', s.player.x - 500, 300);
+    const near2 = addEnemy(s, 'nemesite', s.player.x - 300, 300);
     const far = addEnemy(s, 'snatcher', s.player.x + 3000, 300);
     s.shots.push({ x: s.player.x + 100, y: 300, vx: 0, vy: 0, life: 1 });
     s.shots.push({ x: s.player.x + 3000, y: 300, vx: 0, vy: 0, life: 1 });
@@ -57,6 +58,24 @@ describe('triggerBomb', () => {
     expect(s.bombs).toBe(START_BOMBS - 1);
     expect(s.hitStop).toBe(HITSTOP_MULTI);
     expect(s.events.some((e) => e.type === 'bombDetonated')).toBe(true);
+  });
+
+  it('is centred on the led screen, not on the player', () => {
+    const s = createGameState(1);
+    s.player.facing = 1;
+    const ahead = addEnemy(s, 'snatcher', s.player.x + 800, 300);
+    const behind = addEnemy(s, 'snatcher', s.player.x - 550, 300);
+    triggerBomb(s);
+    expect(ahead.dead).toBe(true);
+    expect(behind.dead).toBe(false);
+    expect(CAMERA_LEAD).toBeGreaterThan(0);
+  });
+
+  it('kills fragments spawned by bombed orbs', () => {
+    const s = createGameState(1);
+    addEnemy(s, 'orb', s.player.x + 200, 300);
+    triggerBomb(s);
+    expect(s.enemies.filter((e) => !e.dead)).toHaveLength(0);
   });
 
   it('does nothing without bombs or while dead', () => {
