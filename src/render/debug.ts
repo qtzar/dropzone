@@ -12,7 +12,8 @@ export function drawDebug(ctx: CanvasRenderingContext2D, s: GameState, camX: num
     `WAVE ${s.wave}  T ${s.waveTime.toFixed(1)}`,
     `ENEMIES ${s.enemies.length}`,
     `SHOTS ${s.shots.length}  HAZARDS ${s.magma.length + s.acid.length + s.bolts.length + s.eyeBombs.length}`,
-    `MEN ${aliveMen}/${s.men.length}`,
+    `MEN ${aliveMen}/${s.men.length}  SAVED ${s.savedThisWave}  NEXT ${s.survivors}`,
+    `SHIELD ${s.shieldBank.toFixed(1)}  BOMBS ${s.bombs}`,
     `PARTICLES ${particles}`,
     `MULT x${s.multiplier}  UNSTABLE ${s.unstable}`,
   ];

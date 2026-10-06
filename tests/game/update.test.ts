@@ -99,3 +99,32 @@ describe('update volcanoes', () => {
     expect(s.events.some((e) => e.type === 'volcanoErupt')).toBe(true);
   });
 });
+
+describe('update between waves', () => {
+  it('hazards keep moving during the wave-complete pause but cannot hurt the player', () => {
+    const s = createGameState(1);
+    s.phase = 'waveComplete';
+    s.phaseTimer = 3;
+    s.magma.push({ x: s.player.x, y: s.player.y - 40, vx: 0, vy: 200, r: 5, hot: false });
+    const y0 = s.magma[0].y;
+    for (let i = 0; i < 30; i++) update(s, NO_ACTIONS, SIM_DT);
+    expect(s.player.alive).toBe(true);
+    expect(s.magma.length === 0 || s.magma[0].y > y0).toBe(true);
+  });
+});
+
+describe('planet unstable through update', () => {
+  it('losing every man turns Planters into Antimatter and the volcanoes white-hot', () => {
+    const s = createGameState(1);
+    s.player.invuln = 999;
+    addMan(s, 3000, 'dead');
+    const planter = addEnemy(s, 'planter', 5000, 300);
+    planter.fireTimer = Infinity;
+    update(s, NO_ACTIONS, SIM_DT);
+    expect(s.unstable).toBe(true);
+    expect(planter.kind).toBe('antimatter');
+    expect(s.events.some((e) => e.type === 'planetUnstable')).toBe(true);
+    for (let t = 0; t < 2; t += SIM_DT) update(s, NO_ACTIONS, SIM_DT);
+    expect(s.magma.some((m) => m.hot)).toBe(true);
+  });
+});

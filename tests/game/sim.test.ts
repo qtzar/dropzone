@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { NO_ACTIONS, type Actions } from '../../src/core/input';
 import { update } from '../../src/game/update';
 import { newGame } from '../../src/game/systems/waves';
-import { SIM_DT, MEN_PER_WAVE } from '../../src/game/constants';
+import { SIM_DT, MEN_PER_WAVE, SHIELD_START, SHIELD_PER_WAVE } from '../../src/game/constants';
 import type { GameState } from '../../src/game/state';
 
 /** Deterministic scripted pilot: sweeps back and forth, bobs, fires constantly, bombs and cloaks periodically. */
@@ -66,6 +66,22 @@ describe('deterministic simulation', () => {
   });
 });
 
+describe('phase 2 roster in scripted play', () => {
+  it('volcanoes, planters, nemesites and the nmeye all show up in 90 s', () => {
+    const s = newGame(1234);
+    s.lives = 99;
+    const seen = new Set<string>();
+    for (let i = 0; i < Math.round(90 / SIM_DT); i++) {
+      update(s, scriptedActions(i), SIM_DT);
+      for (const e of s.events) seen.add(e.type);
+      s.events.length = 0;
+    }
+    for (const t of ['volcanoErupt', 'manWhistle', 'nemesiteWarning', 'nmeyeSpawned', 'bombDetonated']) {
+      expect(seen.has(t)).toBe(true);
+    }
+  });
+});
+
 describe('wave progression', () => {
   it('reaches wave 6 with a fresh shipment of men even after the planet went unstable', () => {
     const s = newGame(42);
@@ -96,5 +112,7 @@ describe('wave progression', () => {
     expect(menAtStart[4]).toBe(0); // planet went unstable in wave 3
     expect(menAtStart[5]).toBe(0); // invasion wave
     expect(s.men).toHaveLength(MEN_PER_WAVE); // shipment
+    expect(s.shieldBank).toBe(SHIELD_START + 5 * SHIELD_PER_WAVE);
+    expect(s.score).toBeGreaterThan(0); // end-of-wave bonuses
   });
 });
