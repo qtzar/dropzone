@@ -97,14 +97,21 @@ describe('walking to the base', () => {
 
   it('turn back at a lava ditch edge', () => {
     const s = createGameState(1);
-    testLandscape(s);
-    const m = addMan(s, 6060);
+    // Ditch at 3000 (covers ~2968..3032); man walks left toward base at 640
+    s.landscape = { volcanoes: [], lakeX: 8000, ditches: [3000], craters: [] };
+    const m = addMan(s, 3060);
     m.walkTimer = 0;
-    for (let t = 0; t < 6; t += SIM_DT) {
+    let turned = false;
+    for (let t = 0; t < 4; t += SIM_DT) {
       updateMen(s, SIM_DT);
       expect(isLava(s.landscape, m.x)).toBe(false);
+      if (m.dir === 1) {
+        turned = true;
+        expect(m.walkTimer).toBeLessThanOrEqual(2);
+      }
     }
-    expect(m.x).toBeGreaterThan(6032);
+    expect(turned).toBe(true);
+    expect(m.x).toBeGreaterThan(3032);
   });
 
   it('a man who reaches the base pad rescues himself: survivor, no points', () => {
