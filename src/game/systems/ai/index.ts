@@ -10,6 +10,7 @@ import {
 } from '../../constants';
 import { playerVisible, homeOnPlayer } from './common';
 import { updatePlanter, updateAndroid } from './planter';
+import { updateNemesite, updateNmeye, updateAntimatter } from './homers';
 
 const SNATCHER_SEEK_RANGE = 2500;
 const GRAB_DISTANCE = 10;
@@ -158,7 +159,13 @@ export function updateEnemies(s: GameState, dt: number): void {
         updateSnatcher(s, e);
         break;
       case 'nemesite':
-        homeOnPlayer(s, e, dt, 2);
+        updateNemesite(s, e, dt);
+        break;
+      case 'nmeye':
+        updateNmeye(s, e, dt);
+        break;
+      case 'antimatter':
+        updateAntimatter(s, e, dt);
         break;
       case 'hunter':
         homeOnPlayer(s, e, dt, 4);
@@ -176,8 +183,6 @@ export function updateEnemies(s: GameState, dt: number): void {
       case 'fragment':
       case 'spore':
       case 'blunderstorm':
-      case 'nmeye':
-      case 'antimatter':
         break;
     }
     integrate(s, e, dt);

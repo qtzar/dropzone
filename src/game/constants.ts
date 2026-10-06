@@ -60,8 +60,9 @@ export const ENEMY_SHOT_LIFE = 3;
 export const TRAIL_LIFE = 1.5;
 export const TRAIL_INTERVAL = 0.05;
 export const TRAIL_RADIUS = 6;
-export const HUNTER_DELAY = 60;
-export const HUNTER_REPEAT = 20;
+/** The first Nmeye appears this many seconds into a wave, then one every NMEYE_REPEAT seconds. */
+export const NMEYE_DELAY = 60;
+export const NMEYE_REPEAT = 20;
 /** Enemies only shoot when within this horizontal distance of the player. */
 export const ENEMY_FIRE_RANGE = 800;
 
@@ -83,6 +84,19 @@ export const TETHER_SPEED = 120;
 export const ANDROID_CHASE_MULT = 1.6;
 export const ANDROID_FALL_GRAVITY = 300;
 export const ANDROID_FALLING_POINTS = 500;
+export const NEMESITE_TURN_RATE = 2;
+/** A Nemesite only dodges lasers that are further away than this; closer, it commits. */
+export const NEMESITE_COMMIT_RANGE = 250;
+export const NEMESITE_DODGE_BAND = 40;
+export const NEMESITE_DODGE_SPEED = 140;
+export const NEMESITE_DODGE_TIME = 0.35;
+export const NEMESITE_WARN_RANGE = 640;
+export const NMEYE_TURN_MIN = 0.4;
+export const NMEYE_TURN_MAX = 0.9;
+/** Max random offset (radians) from the bearing to the player when an Nmeye picks a new heading. */
+export const NMEYE_WOBBLE = 1;
+export const ANTIMATTER_DRIFT = 160;
+export const ANTIMATTER_SPIN = 3;
 
 // Volcanoes (normal magma, and white-hot rocks while the planet is unstable)
 export const MAGMA_RADIUS = 5;

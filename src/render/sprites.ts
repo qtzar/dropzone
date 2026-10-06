@@ -52,10 +52,12 @@ export function drawSprite(
   y: number,
   flipX = false,
   alpha = 1,
+  angle = 0,
 ): void {
   ctx.save();
   ctx.globalAlpha = alpha;
   ctx.translate(x, y);
+  if (angle !== 0) ctx.rotate(angle);
   if (flipX) ctx.scale(-1, 1);
   ctx.drawImage(sprite.canvas, -sprite.half, -sprite.half, sprite.half * 2, sprite.half * 2);
   ctx.restore();

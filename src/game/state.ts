@@ -158,7 +158,8 @@ export interface GameState {
   time: number;
   wave: number;
   waveTime: number;
-  nextHunterAt: number;
+  /** waveTime at which the next Nmeye appears. */
+  nextNmeyeAt: number;
   score: number;
   lives: number;
   bombs: number;
@@ -210,7 +211,7 @@ export function createGameState(seed: number): GameState {
     time: 0,
     wave: 0,
     waveTime: 0,
-    nextHunterAt: Infinity,
+    nextNmeyeAt: Infinity,
     score: 0,
     lives: START_LIVES,
     bombs: START_BOMBS,

@@ -59,3 +59,11 @@ describe('createEventAudio', () => {
     expect(calls.filter((c) => c === 'laser')).toHaveLength(2);
   });
 });
+
+describe('createEventAudio nmeye', () => {
+  it('plays the warning sting when an Nmeye appears', () => {
+    const { sfx, calls } = fakeSfx();
+    createEventAudio(sfx, () => 0)([{ type: 'nmeyeSpawned', x: 0, y: 0 }]);
+    expect(calls).toEqual(['hunter']);
+  });
+});

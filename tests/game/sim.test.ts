@@ -18,17 +18,17 @@ function scriptedActions(tick: number): Actions {
   };
 }
 
-function simulate(seed: number, seconds: number, lives?: number): { s: GameState; hunters: number } {
+function simulate(seed: number, seconds: number, lives?: number): { s: GameState; nmeyes: number } {
   const s = newGame(seed);
   if (lives !== undefined) s.lives = lives;
   const ticks = Math.round(seconds / SIM_DT);
-  let hunters = 0;
+  let nmeyes = 0;
   for (let i = 0; i < ticks; i++) {
     update(s, scriptedActions(i), SIM_DT);
-    for (const e of s.events) if (e.type === 'hunterSpawned') hunters++;
+    for (const e of s.events) if (e.type === 'nmeyeSpawned') nmeyes++;
     s.events.length = 0;
   }
-  return { s, hunters };
+  return { s, nmeyes };
 }
 
 function allFinite(s: GameState): boolean {
@@ -41,9 +41,9 @@ function allFinite(s: GameState): boolean {
 
 describe('deterministic simulation', () => {
   it('runs 90 s of scripted play without NaNs or runaway entity counts', () => {
-    const { s, hunters } = simulate(1234, 90, 99);
+    const { s, nmeyes } = simulate(1234, 90, 99);
     expect(s.time).toBeCloseTo(90, 0);
-    expect(hunters).toBeGreaterThanOrEqual(1);
+    expect(nmeyes).toBeGreaterThanOrEqual(1);
     expect(allFinite(s)).toBe(true);
     expect(s.enemies.length).toBeLessThan(200);
     expect(s.shots.length).toBeLessThan(500);

@@ -177,6 +177,9 @@ export class Effects implements FxLayer {
         case 'hunterSpawned':
           this.ring(e.x, e.y, 90, PALETTE.hunter, 0.5);
           break;
+        case 'nmeyeSpawned':
+          this.ring(e.x, e.y, 90, PALETTE.nmeye, 0.5);
+          break;
         default:
           break;
       }

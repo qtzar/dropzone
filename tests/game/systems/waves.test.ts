@@ -5,7 +5,7 @@ import {
 } from '../../../src/game/systems/waves';
 import { getWaveTuning } from '../../../src/game/tuning';
 import {
-  MEN_PER_WAVE, HUNTER_DELAY, HUNTER_REPEAT, SPAWN_SAFE_DISTANCE, WAVE_COMPLETE_TIME,
+  MEN_PER_WAVE, NMEYE_DELAY, NMEYE_REPEAT, SPAWN_SAFE_DISTANCE, WAVE_COMPLETE_TIME,
   WAVE_BONUS_PER_MAN, START_BOMBS, MAX_BOMBS,
 } from '../../../src/game/constants';
 import { shortestDx } from '../../../src/core/world';
@@ -49,7 +49,7 @@ describe('startWave', () => {
     expect(s.player.cloak).toBe(1);
     expect(s.shots).toHaveLength(0);
     expect(s.waveTime).toBe(0);
-    expect(s.nextHunterAt).toBe(HUNTER_DELAY);
+    expect(s.nextNmeyeAt).toBe(NMEYE_DELAY);
   });
 
   it('spawns no men after the planet went critical', () => {
@@ -71,18 +71,21 @@ describe('startWave', () => {
   });
 });
 
-describe('hunters', () => {
-  it('spawns a hunter after HUNTER_DELAY and then every HUNTER_REPEAT', () => {
+describe('nmeye timer', () => {
+  it('spawns an Nmeye 60 s into the wave and then every 20 s', () => {
     const s = createGameState(1);
     startWave(s, 1);
-    const hunters = () => s.enemies.filter((e) => e.kind === 'hunter').length;
-    updateWaveTimers(s, HUNTER_DELAY - 0.01);
-    expect(hunters()).toBe(0);
+    expect(NMEYE_DELAY).toBe(60);
+    expect(NMEYE_REPEAT).toBe(20);
+    const nmeyes = () => s.enemies.filter((e) => e.kind === 'nmeye').length;
+    updateWaveTimers(s, NMEYE_DELAY - 0.01);
+    expect(nmeyes()).toBe(0);
     updateWaveTimers(s, 0.02);
-    expect(hunters()).toBe(1);
-    expect(s.events.some((e) => e.type === 'hunterSpawned')).toBe(true);
-    updateWaveTimers(s, HUNTER_REPEAT);
-    expect(hunters()).toBe(2);
+    expect(nmeyes()).toBe(1);
+    expect(s.events.some((e) => e.type === 'nmeyeSpawned')).toBe(true);
+    updateWaveTimers(s, NMEYE_REPEAT);
+    expect(nmeyes()).toBe(2);
+    expect(s.enemies.some((e) => e.kind === 'hunter')).toBe(false);
   });
 });
 

@@ -9,7 +9,7 @@ import { spawnMen } from './rescue';
 import { clearHazards } from './hazards';
 import { addScore } from './scoring';
 import {
-  CEILING_Y, HUNTER_DELAY, HUNTER_REPEAT, MILESTONE_EVERY, MEN_PER_WAVE, MAX_BOMBS,
+  CEILING_Y, NMEYE_DELAY, NMEYE_REPEAT, MILESTONE_EVERY, MEN_PER_WAVE, MAX_BOMBS,
   SPAWN_SAFE_DISTANCE, WAVE_COMPLETE_TIME, WAVE_BONUS_PER_MAN,
 } from '../constants';
 
@@ -23,7 +23,7 @@ function spawnX(s: GameState): number {
 export function startWave(s: GameState, wave: number): void {
   s.wave = wave;
   s.waveTime = 0;
-  s.nextHunterAt = HUNTER_DELAY;
+  s.nextNmeyeAt = NMEYE_DELAY;
   s.savedThisWave = 0;
   s.critical = false;
   s.phase = 'playing';
@@ -65,13 +65,13 @@ export function startWave(s: GameState, wave: number): void {
 
 export function updateWaveTimers(s: GameState, dt: number): void {
   s.waveTime += dt;
-  while (s.waveTime >= s.nextHunterAt) {
+  while (s.waveTime >= s.nextNmeyeAt) {
     const side = chance(s.rng, 0.5) ? 1 : -1;
     const x = wrapX(s.player.x + side * VIEW_W * 0.7);
     const y = range(s.rng, SPAWN_MIN_Y, 400);
-    s.enemies.push(createEnemy(s, 'hunter', x, y));
-    s.nextHunterAt += HUNTER_REPEAT;
-    emit(s, { type: 'hunterSpawned', x, y });
+    s.enemies.push(createEnemy(s, 'nmeye', x, y));
+    s.nextNmeyeAt += NMEYE_REPEAT;
+    emit(s, { type: 'nmeyeSpawned', x, y });
   }
 }
 

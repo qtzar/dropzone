@@ -185,3 +185,13 @@ describe('planter and android kills', () => {
     expect(m.holderId).toBeNull();
   });
 });
+
+describe('nmeye kills', () => {
+  it('killing an Nmeye is a big explosion with hit-stop', () => {
+    const s = createGameState(1);
+    killEnemy(s, addEnemy(s, 'nmeye', 2000, 300));
+    expect(s.score).toBe(ENEMY_STATS.nmeye.points);
+    expect(s.hitStop).toBe(HITSTOP_HUNTER);
+    expect(s.events).toContainEqual({ type: 'explosion', x: 2000, y: 300, source: 'nmeye', big: true });
+  });
+});

@@ -112,10 +112,23 @@ export class CanvasRenderer implements Renderer {
 
   private drawEnemies(ctx: CanvasRenderingContext2D, s: GameState, camX: number): void {
     this.drawTethers(ctx, s, camX);
+    const flash = Math.floor(s.time * 10) % 2 === 0;
     for (const e of s.enemies) {
       const sx = toScreenX(e.x, camX);
       if (!onScreen(sx, 60)) continue;
-      drawSprite(ctx, this.sprites[e.kind], sx, e.y, e.vx < 0);
+      if (e.kind === 'nmeye') {
+        // The Nmeye flashes white as a warning.
+        drawSprite(ctx, this.sprites.nmeye, sx, e.y, e.vx < 0, flash ? 1 : 0.6);
+        if (flash) {
+          ctx.fillStyle = '#ffffff';
+          ctx.beginPath();
+          ctx.arc(sx, e.y, 5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        continue;
+      }
+      const angle = e.kind === 'antimatter' ? s.time * 6 : 0;
+      drawSprite(ctx, this.sprites[e.kind], sx, e.y, e.vx < 0, 1, angle);
     }
   }
 

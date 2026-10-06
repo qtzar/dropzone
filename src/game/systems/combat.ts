@@ -62,8 +62,9 @@ export function killEnemy(s: GameState, e: Enemy): void {
   }
 
   registerKill(s, killPoints(e), e.x, e.y);
-  emit(s, { type: 'explosion', x: e.x, y: e.y, source: e.kind, big: e.kind === 'hunter' || e.kind === 'orb' });
-  if (e.kind === 'hunter') s.hitStop = Math.max(s.hitStop, HITSTOP_HUNTER);
+  const big = e.kind === 'hunter' || e.kind === 'orb' || e.kind === 'nmeye';
+  emit(s, { type: 'explosion', x: e.x, y: e.y, source: e.kind, big });
+  if (e.kind === 'hunter' || e.kind === 'nmeye') s.hitStop = Math.max(s.hitStop, HITSTOP_HUNTER);
 }
 
 export function resolveLaserHits(s: GameState): void {
