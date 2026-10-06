@@ -7,9 +7,10 @@ export function addScore(s: GameState, points: number): void {
   s.score += points;
   while (s.score >= s.nextExtraLife && s.nextExtraLife <= EXTRA_AWARD_LIMIT) {
     s.lives++;
-    s.bombs = Math.min(MAX_BOMBS, s.bombs + 1);
+    const bomb = s.bombs < MAX_BOMBS;
+    if (bomb) s.bombs++;
     s.nextExtraLife += EXTRA_LIFE_EVERY;
-    emit(s, { type: 'extraLife' });
+    emit(s, { type: 'extraLife', bomb });
   }
 }
 

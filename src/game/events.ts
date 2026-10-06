@@ -18,7 +18,7 @@ export type GameEvent =
   | { type: 'cloakOff' }
   | { type: 'waveStarted'; wave: number }
   | { type: 'waveCleared'; wave: number; bonus: number; saved: number }
-  | { type: 'extraLife' }
+  | { type: 'extraLife'; bomb: boolean }
   | { type: 'manWhistle'; x: number; y: number }
   | { type: 'manSelfRescued'; x: number; y: number }
   | { type: 'nemesiteWarning'; x: number; y: number }

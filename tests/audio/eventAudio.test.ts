@@ -29,7 +29,7 @@ describe('createEventAudio', () => {
       { type: 'manDied', x: 0, y: 0 },
       { type: 'bombDetonated', x: 0, y: 0 },
       { type: 'playerDied', x: 0, y: 0 },
-      { type: 'extraLife' },
+      { type: 'extraLife', bomb: true },
       { type: 'planetUnstable' },
       { type: 'cloakOn' },
       { type: 'cloakOff' },

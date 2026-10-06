@@ -62,6 +62,15 @@ describe('scoring', () => {
     expect(s.bombs).toBe(START_BOMBS + 2);
     expect(s.nextExtraLife).toBe(EXTRA_LIFE_EVERY * 3);
     expect(s.events.filter((e) => e.type === 'extraLife')).toHaveLength(2);
+    expect(s.events.filter((e) => e.type === 'extraLife' && e.bomb)).toHaveLength(2);
+  });
+
+  it('the extraLife event says no bomb was granted when bombs are already at the cap', () => {
+    const s = createGameState(1);
+    s.bombs = MAX_BOMBS;
+    addScore(s, EXTRA_LIFE_EVERY);
+    expect(s.events).toContainEqual({ type: 'extraLife', bomb: false });
+    expect(s.bombs).toBe(MAX_BOMBS);
   });
 
   it('caps smart bombs at 9', () => {

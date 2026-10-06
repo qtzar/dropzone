@@ -182,6 +182,11 @@ function drawRightPanel(ctx: CanvasRenderingContext2D, s: GameState): void {
     ctx.closePath();
     ctx.fill();
   }
+  if (s.lives > 6) {
+    ctx.font = 'bold 12px monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText(`x${s.lives}`, x0, 40);
+  }
   ctx.strokeStyle = PALETTE.gold;
   ctx.lineWidth = 1.5;
   for (let i = 0; i < MAX_BOMBS; i++) {

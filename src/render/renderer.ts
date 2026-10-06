@@ -128,13 +128,13 @@ export class CanvasRenderer implements Renderer {
       }
       if (e.kind === 'trailer') {
         // Dim tail behind the bright head: only head hits kill.
-        const v = Math.hypot(e.vx, e.vy) || 1;
+        const back = e.vx > 0 ? -1 : 1;
         ctx.strokeStyle = PALETTE.trailer;
         ctx.globalAlpha = 0.35;
         ctx.lineWidth = 6;
         ctx.beginPath();
         ctx.moveTo(sx, e.y);
-        ctx.lineTo(sx - (e.vx / v) * 26, e.y - (e.vy / v) * 26);
+        ctx.lineTo(sx + back * 26, e.y);
         ctx.stroke();
         ctx.globalAlpha = 1;
       }
