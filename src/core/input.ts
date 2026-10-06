@@ -137,10 +137,13 @@ export class InputManager {
 
   constructor(target: Window) {
     target.addEventListener('keydown', (e) => {
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
       if (KEY_BINDINGS[e.code]) e.preventDefault();
       this.down.add(e.code);
     });
     target.addEventListener('keyup', (e) => {
+      // macOS swallows keyups for other keys while Meta is held.
+      if (e.code === 'MetaLeft' || e.code === 'MetaRight') this.down.clear();
       this.down.delete(e.code);
     });
     target.addEventListener('blur', () => this.down.clear());

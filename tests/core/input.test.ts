@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
-  keyboardButtons, gamepadButtons, buildActions, consumeEdges, NO_ACTIONS, type Button, type PadSnapshot,
+  keyboardButtons, gamepadButtons, buildActions, consumeEdges, NO_ACTIONS, InputManager, type Button, type PadSnapshot,
 } from '../../src/core/input';
 
 function pad(axes: number[], pressed: number[] = [], values: Record<number, number> = {}): PadSnapshot {
@@ -101,5 +101,49 @@ describe('consumeEdges', () => {
     expect(c.bomb).toBe(false);
     expect(c.pause).toBe(false);
     expect(c.menuX).toBe(0);
+  });
+});
+
+describe('InputManager modifiers', () => {
+  function fakeWindow() {
+    const handlers: Record<string, Array<(e: unknown) => void>> = {};
+    const target = {
+      addEventListener: (type: string, h: (e: unknown) => void) => (handlers[type] ??= []).push(h),
+    } as unknown as Window;
+    const fire = (type: string, e: object = {}) => handlers[type]?.forEach((h) => h(e));
+    return { target, fire };
+  }
+  const key = (code: string, mods: object = {}) => {
+    const ev = { code, preventDefault: () => void (ev.prevented = true), prevented: false, ...mods };
+    return ev;
+  };
+
+  it('ignores keydown with ctrl/meta/alt held and does not prevent default', () => {
+    const { target, fire } = fakeWindow();
+    const input = new InputManager(target);
+    for (const mod of ['ctrlKey', 'metaKey', 'altKey']) {
+      const ev = key('KeyB', { [mod]: true });
+      fire('keydown', ev);
+      expect(ev.prevented).toBe(false);
+    }
+    expect(input.poll().bomb).toBe(false);
+  });
+
+  it('registers plain keydown and prevents default', () => {
+    const { target, fire } = fakeWindow();
+    const input = new InputManager(target);
+    const ev = key('KeyB');
+    fire('keydown', ev);
+    expect(ev.prevented).toBe(true);
+    expect(input.poll().bomb).toBe(true);
+  });
+
+  it('clears held keys when Meta is released', () => {
+    const { target, fire } = fakeWindow();
+    const input = new InputManager(target);
+    fire('keydown', key('ArrowRight'));
+    expect(input.poll().moveX).toBe(1);
+    fire('keyup', key('MetaLeft'));
+    expect(input.poll().moveX).toBe(0);
   });
 });
