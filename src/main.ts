@@ -1,7 +1,33 @@
-const canvas = document.getElementById('game') as HTMLCanvasElement;
-const ctx = canvas.getContext('2d')!;
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
-ctx.fillStyle = '#0ff';
-ctx.font = '32px monospace';
-ctx.fillText('DROPZONE', 40, 60);
+import { createView } from './render/canvas';
+import { InputManager, consumeEdges } from './core/input';
+import { createGameState } from './game/state';
+import { update } from './game/update';
+import { startLoop } from './core/loop';
+import { SIM_DT } from './game/constants';
+import { CanvasRenderer } from './render/renderer';
+import { createCamera, updateCamera } from './render/camera';
+import { lerpWrapped } from './core/world';
+
+const view = createView(document.getElementById('game') as HTMLCanvasElement);
+const input = new InputManager(window);
+const state = createGameState((Math.random() * 2 ** 32) >>> 0);
+const camera = createCamera(state.player.x);
+const renderer = new CanvasRenderer(view);
+let actions = input.poll();
+
+startLoop(
+  {
+    step(dt) {
+      update(state, actions, dt);
+      actions = consumeEdges(actions);
+    },
+    render(alpha, frameDt) {
+      const px = lerpWrapped(state.player.prevX, state.player.x, alpha);
+      updateCamera(camera, px, state.player.facing, frameDt);
+      renderer.render(state, camera, alpha);
+      state.events.length = 0;
+      actions = input.poll();
+    },
+  },
+  SIM_DT,
+);
