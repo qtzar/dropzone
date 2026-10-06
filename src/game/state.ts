@@ -2,7 +2,7 @@ import { type Rng, createRng } from '../core/rng';
 import type { GameEvent } from './events';
 import { generateTerrain } from './terrain';
 import { generateLandscape, applyLandscape, type Landscape } from './landscape';
-import { START_LIVES, START_BOMBS, EXTRA_LIFE_EVERY, MEN_PER_WAVE, CEILING_Y } from './constants';
+import { START_LIVES, START_BOMBS, EXTRA_LIFE_EVERY, MEN_PER_WAVE, CEILING_Y, SHIELD_START } from './constants';
 
 export type Facing = 1 | -1;
 
@@ -29,7 +29,7 @@ export interface Player {
   carryingId: number | null;
 }
 
-export type ManState = 'walking' | 'carried' | 'snatched' | 'falling' | 'saved' | 'dead';
+export type ManState = 'walking' | 'carried' | 'snatched' | 'chased' | 'falling' | 'saved' | 'dead';
 
 export interface Man {
   id: number;
@@ -39,12 +39,14 @@ export interface Man {
   dir: Facing;
   state: ManState;
   fallStartY: number;
-  /** Enemy id while snatched. */
+  /** Enemy id while snatched (holder) or chased (the Android chasing him). */
   holderId: number | null;
   walkTimer: number;
 }
 
-export type EnemyKind = 'snatcher' | 'nemesite' | 'trailer' | 'orb' | 'fragment' | 'hunter';
+export type EnemyKind =
+  | 'snatcher' | 'orb' | 'fragment' | 'hunter'
+  | 'planter' | 'android' | 'nemesite' | 'spore' | 'trailer' | 'blunderstorm' | 'nmeye' | 'antimatter';
 
 export interface Enemy {
   id: number;
@@ -66,6 +68,31 @@ export interface Enemy {
   carryingId: number | null;
   aggressive: boolean;
   trailTimer: number;
+  /** Planter: id of the Android it is lowering. Android: id of the Planter lowering it. */
+  linkedId: number | null;
+  /** Planter: current tether length in px while lowering. */
+  tetherLen: number;
+  /** Nemesite: seconds left in the current dodge jink. */
+  dodgeTimer: number;
+  /** Nemesite: vertical direction of the current jink. */
+  dodgeDir: Facing;
+  /** Nemesite: the proximity warning has fired. */
+  warned: boolean;
+  /** Trailer: homes toward the player instead of weaving. */
+  homer: boolean;
+  /** Android: released from its Planter in mid-air and falling. */
+  falling: boolean;
+  /** Antimatter: angle around the orbit centre. */
+  orbitAngle: number;
+  /** Antimatter: orbit centre. */
+  orbitX: number;
+  orbitY: number;
+  /** Blunderstorm: seconds to the next storm action. Nmeye: seconds to the next heading change. */
+  actionTimer: number;
+  /** Nmeye: seconds to the next bomb. */
+  bombTimer: number;
+  /** Blunderstorm: seconds until the pending proton bolt (0 = none pending). */
+  boltTimer: number;
   dead: boolean;
 }
 
@@ -89,6 +116,38 @@ export interface TrailSeg {
   x: number;
   y: number;
   life: number;
+}
+
+/** Volcano magma ball or white-hot rock. */
+export interface Magma {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  r: number;
+  hot: boolean;
+}
+
+/** Blunderstorm acid drop. */
+export interface Acid {
+  x: number;
+  y: number;
+  vy: number;
+}
+
+/** Blunderstorm proton bolt: a vertical lethal column. */
+export interface Bolt {
+  x: number;
+  top: number;
+  bottom: number;
+  life: number;
+}
+
+/** Bomb dropped by an Nmeye. */
+export interface EyeBomb {
+  x: number;
+  y: number;
+  vy: number;
 }
 
 export type GamePhase = 'playing' | 'waveComplete' | 'gameOver';
@@ -125,6 +184,14 @@ export interface GameState {
   lasers: Laser[];
   shots: Shot[];
   trails: TrailSeg[];
+  magma: Magma[];
+  acid: Acid[];
+  bolts: Bolt[];
+  eyeBombs: EyeBomb[];
+  /** Seconds of shield (cloak) left. */
+  shieldBank: number;
+  /** Men to deploy at the start of the next wave. */
+  survivors: number;
   events: GameEvent[];
   nextId: number;
 }
@@ -186,6 +253,12 @@ export function createGameState(seed: number): GameState {
     lasers: [],
     shots: [],
     trails: [],
+    magma: [],
+    acid: [],
+    bolts: [],
+    eyeBombs: [],
+    shieldBank: SHIELD_START,
+    survivors: MEN_PER_WAVE,
     events: [],
     nextId: 1,
   };

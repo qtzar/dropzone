@@ -30,6 +30,8 @@ export const START_BOMBS = 3;
 export const MAX_BOMBS = 5;
 /** Cloak meter drained per second while active (meter is 0..1, so 4 s total). */
 export const CLOAK_DRAIN = 0.25;
+/** Shield (cloak) seconds at the start of a game. */
+export const SHIELD_START = 7;
 export const RESPAWN_DELAY = 2;
 export const RESPAWN_INVULN = 2;
 
@@ -62,6 +64,17 @@ export const HUNTER_DELAY = 60;
 export const HUNTER_REPEAT = 20;
 /** Enemies only shoot when within this horizontal distance of the player. */
 export const ENEMY_FIRE_RANGE = 800;
+
+// Phase 2 enemy roster
+export const PLANTER_CRUISE_MIN = 220;
+export const PLANTER_CRUISE_MAX = 380;
+export const STORM_BAND_TOP = CEILING_Y + 20;
+export const STORM_BAND_BOTTOM = CEILING_Y + 80;
+export const STORM_ACTION_MIN = 3;
+export const STORM_ACTION_MAX = 5;
+export const TRAILER_HOMER_CHANCE = 0.5;
+export const NMEYE_BOMB_INTERVAL = 0.6;
+export const ANTIMATTER_ORBIT_RADIUS = 80;
 
 // Waves
 export const MILESTONE_EVERY = 5;

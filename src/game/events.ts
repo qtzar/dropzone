@@ -22,6 +22,16 @@ export type GameEvent =
   | { type: 'planetCritical' }
   | { type: 'hunterSpawned'; x: number; y: number }
   | { type: 'extraLife' }
+  | { type: 'manWhistle'; x: number; y: number }
+  | { type: 'manSelfRescued'; x: number; y: number }
+  | { type: 'nemesiteWarning'; x: number; y: number }
+  | { type: 'rumble'; x: number; y: number }
+  | { type: 'protonBolt'; x: number; top: number; bottom: number }
+  | { type: 'volcanoErupt'; x: number; y: number; whiteHot: boolean }
+  | { type: 'planetUnstable' }
+  | { type: 'invasionWave'; wave: number }
+  | { type: 'nmeyeSpawned'; x: number; y: number }
+  | { type: 'laserBlocked'; x: number; y: number }
   | { type: 'gameOver'; score: number };
 
 export function emit(target: { events: GameEvent[] }, e: GameEvent): void {

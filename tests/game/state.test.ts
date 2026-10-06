@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { createGameState, allocId } from '../../src/game/state';
-import { START_LIVES, START_BOMBS, EXTRA_LIFE_EVERY, MEN_PER_WAVE } from '../../src/game/constants';
+import { START_LIVES, START_BOMBS, EXTRA_LIFE_EVERY, MEN_PER_WAVE, SHIELD_START } from '../../src/game/constants';
 import { groundYAt } from '../../src/game/terrain';
 
 describe('createGameState', () => {
@@ -27,6 +27,17 @@ describe('createGameState', () => {
     expect(s.player.facing).toBe(1);
     expect(s.player.cloak).toBe(1);
     expect(s.player.carryingId).toBeNull();
+  });
+
+  it('starts with empty hazard lists, a 7 s shield bank and 8 survivors to deploy', () => {
+    const s = createGameState(1);
+    expect(s.magma).toEqual([]);
+    expect(s.acid).toEqual([]);
+    expect(s.bolts).toEqual([]);
+    expect(s.eyeBombs).toEqual([]);
+    expect(s.shieldBank).toBe(SHIELD_START);
+    expect(SHIELD_START).toBe(7);
+    expect(s.survivors).toBe(MEN_PER_WAVE);
   });
 
   it('allocId returns unique increasing ids', () => {

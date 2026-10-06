@@ -146,5 +146,62 @@ export function createSprites(): Record<SpriteKey, Sprite> {
       line(c, -20, 0, 20, 0);
       c.stroke();
     }),
+    planter: makeSprite(16, PALETTE.planter, (c) => {
+      c.beginPath();
+      c.moveTo(-15, 2);
+      c.ellipse(0, 2, 15, 5, 0, 0, Math.PI * 2); // saucer rim
+      c.moveTo(-7, -2);
+      c.arc(0, -2, 7, Math.PI, 0); // dome
+      line(c, 0, 7, 0, 12); // tether hook
+      c.stroke();
+    }),
+    android: makeSprite(10, PALETTE.android, (c) => {
+      c.beginPath();
+      poly(c, [[-3, -9], [3, -9], [3, -4], [-3, -4]]); // head
+      poly(c, [[-5, -3], [5, -3], [4, 4], [-4, 4]]); // body
+      line(c, -3, 4, -5, 9);
+      line(c, 3, 4, 5, 9);
+      line(c, -5, -2, -8, 2);
+      line(c, 5, -2, 8, 2);
+      c.stroke();
+    }),
+    spore: makeSprite(15, PALETTE.spore, (c) => {
+      c.beginPath();
+      circle(c, 0, 0, 9);
+      circle(c, 0, 0, 3);
+      for (let i = 0; i < 6; i++) {
+        const a = (i / 6) * Math.PI * 2;
+        line(c, Math.cos(a) * 9, Math.sin(a) * 9, Math.cos(a) * 14, Math.sin(a) * 14);
+      }
+      c.stroke();
+    }),
+    blunderstorm: makeSprite(26, PALETTE.blunderstorm, (c) => {
+      c.beginPath();
+      c.moveTo(-22, 8);
+      c.arc(-12, 2, 10, Math.PI * 0.75, Math.PI * 1.6);
+      c.arc(2, -6, 13, Math.PI * 1.1, Math.PI * 1.9);
+      c.arc(15, 2, 9, Math.PI * 1.4, Math.PI * 0.4);
+      c.lineTo(-22, 8);
+      line(c, -6, 12, -10, 20);
+      line(c, 6, 12, 2, 20);
+      c.stroke();
+    }),
+    nmeye: makeSprite(15, PALETTE.nmeye, (c) => {
+      c.beginPath();
+      c.moveTo(-14, 0);
+      c.quadraticCurveTo(0, -13, 14, 0);
+      c.quadraticCurveTo(0, 13, -14, 0);
+      circle(c, 0, 0, 5);
+      circle(c, 0, 0, 1.5);
+      c.stroke();
+    }),
+    antimatter: makeSprite(13, PALETTE.antimatter, (c) => {
+      c.beginPath();
+      for (let i = 0; i < 3; i++) {
+        const a = (i / 3) * Math.PI * 2;
+        circle(c, Math.cos(a) * 5, Math.sin(a) * 5, 6);
+      }
+      c.stroke();
+    }),
   };
 }
