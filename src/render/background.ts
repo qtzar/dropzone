@@ -9,7 +9,9 @@ interface StarLayer { factor: number; stars: Star[] }
 
 const MOUNTAIN_STEP = 32;
 const MOUNTAIN_POINTS = 64;
-const MOUNTAIN_FACTOR = 0.5;
+export const STAR_FACTORS = [0.125, 0.25, 0.375] as const;
+export const MOUNTAIN_FACTOR = 0.4;
+export const MOUNTAIN_PERIOD = MOUNTAIN_STEP * MOUNTAIN_POINTS;
 
 function mod(v: number, m: number): number {
   return ((v % m) + m) % m;
@@ -21,7 +23,7 @@ export class Background {
 
   constructor(seed: number) {
     const rng = createRng(seed);
-    const layerDefs: Array<[number, number, number]> = [[0.05, 140, 1], [0.15, 80, 1.5], [0.3, 45, 2]];
+    const layerDefs: Array<[number, number, number]> = [[STAR_FACTORS[0], 140, 1], [STAR_FACTORS[1], 80, 1.5], [STAR_FACTORS[2], 45, 2]];
     this.layers = layerDefs.map(([factor, count, size]) => ({
       factor,
       stars: Array.from({ length: count }, () => ({
@@ -60,7 +62,7 @@ export class Background {
   }
 
   private mountainAt(mx: number): number {
-    const f = mod(mx, MOUNTAIN_STEP * MOUNTAIN_POINTS) / MOUNTAIN_STEP;
+    const f = mod(mx, MOUNTAIN_PERIOD) / MOUNTAIN_STEP;
     const i0 = Math.floor(f) % MOUNTAIN_POINTS;
     const i1 = (i0 + 1) % MOUNTAIN_POINTS;
     const t = f - Math.floor(f);
