@@ -57,6 +57,12 @@ function walk(s: GameState, m: Man, dt: number): void {
   m.y = groundYAt(s.terrain, m.x) - MAN_RADIUS;
 }
 
+/** True while the Android recorded in holderId still exists and is chasing this man. */
+function isChasedBy(s: GameState, m: Man): boolean {
+  const a = m.holderId !== null ? findEnemy(s, m.holderId) : undefined;
+  return a !== undefined && a.kind === 'android' && a.targetId === m.id;
+}
+
 function playerCanTake(s: GameState): boolean {
   return s.player.alive && s.player.carryingId === null;
 }
@@ -116,17 +122,30 @@ function updateFalling(s: GameState, m: Man, dt: number): void {
   }
 }
 
-export function updateMen(s: GameState, dt: number): void {
+function updateWalking(s: GameState, m: Man, dt: number): void {
   const p = s.player;
+  walk(s, m, dt);
+  if (playerCanTake(s) && circlesOverlap(p.x, p.y, PLAYER_RADIUS, m.x, m.y, MAN_RADIUS)) {
+    m.state = 'carried';
+    m.holderId = null;
+    p.carryingId = m.id;
+    emit(s, { type: 'manPickedUp', x: m.x, y: m.y });
+  }
+}
+
+export function updateMen(s: GameState, dt: number): void {
   for (const m of s.men) {
     switch (m.state) {
-      case 'walking':
-        walk(s, m, dt);
-        if (playerCanTake(s) && circlesOverlap(p.x, p.y, PLAYER_RADIUS, m.x, m.y, MAN_RADIUS)) {
-          m.state = 'carried';
-          p.carryingId = m.id;
-          emit(s, { type: 'manPickedUp', x: m.x, y: m.y });
+      case 'chased':
+        // A chased man keeps walking (and can be picked up); he calms down once his Android is gone.
+        if (!isChasedBy(s, m)) {
+          m.state = 'walking';
+          m.holderId = null;
         }
+        updateWalking(s, m, dt);
+        break;
+      case 'walking':
+        updateWalking(s, m, dt);
         break;
       case 'carried':
         updateCarried(s, m);

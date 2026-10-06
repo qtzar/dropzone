@@ -3,7 +3,7 @@ import { range, chance } from '../../core/rng';
 import { allocId, type GameState, type Enemy, type EnemyKind } from '../state';
 import {
   PLANTER_CRUISE_MIN, PLANTER_CRUISE_MAX, STORM_BAND_TOP, STORM_BAND_BOTTOM, STORM_ACTION_MIN, STORM_ACTION_MAX,
-  TRAILER_HOMER_CHANCE, NMEYE_BOMB_INTERVAL, ANTIMATTER_ORBIT_RADIUS,
+  TRAILER_HOMER_CHANCE, NMEYE_BOMB_INTERVAL, ANTIMATTER_ORBIT_RADIUS, ANDROID_FALLING_POINTS,
 } from '../constants';
 
 export interface EnemyStats {
@@ -28,6 +28,12 @@ export const ENEMY_STATS: Record<EnemyKind, EnemyStats> = {
   nmeye: { radius: 14, points: 100, speed: 760, fireMult: 0 },
   antimatter: { radius: 12, points: 150, speed: 160, fireMult: 0 },
 };
+
+/** Points for killing this enemy right now (a falling Android is worth more). */
+export function killPoints(e: Enemy): number {
+  if (e.kind === 'android' && e.falling) return ANDROID_FALLING_POINTS;
+  return ENEMY_STATS[e.kind].points;
+}
 
 export const AGGRESSIVE_SPEED_MULT = 1.3;
 export const AGGRESSIVE_FIRE_MULT = 0.7;

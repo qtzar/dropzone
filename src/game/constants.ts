@@ -75,6 +75,14 @@ export const STORM_ACTION_MAX = 5;
 export const TRAILER_HOMER_CHANCE = 0.5;
 export const NMEYE_BOMB_INTERVAL = 0.6;
 export const ANTIMATTER_ORBIT_RADIUS = 80;
+/** Planters rise this far above their cruise height over a volcano or the base. */
+export const PLANTER_RISE = 120;
+/** A Planter starts lowering when a walking man is within this horizontal distance. */
+export const PLANTER_SPOT_RANGE = 40;
+export const TETHER_SPEED = 120;
+export const ANDROID_CHASE_MULT = 1.6;
+export const ANDROID_FALL_GRAVITY = 300;
+export const ANDROID_FALLING_POINTS = 500;
 
 // Volcanoes (normal magma, and white-hot rocks while the planet is unstable)
 export const MAGMA_RADIUS = 5;

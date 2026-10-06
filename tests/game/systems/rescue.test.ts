@@ -178,3 +178,33 @@ describe('checkCritical', () => {
     expect(s.critical).toBe(false);
   });
 });
+
+describe('chased', () => {
+  it('a chased man keeps walking and can be picked up', () => {
+    const s = createGameState(1);
+    const m = addMan(s, 3000, 'chased');
+    const a = addEnemy(s, 'android', 3500, 600);
+    a.targetId = m.id;
+    m.holderId = a.id;
+    tick(s, 0.5);
+    expect(m.state).toBe('chased');
+    expect(m.x).not.toBe(3000);
+    s.player.x = m.x;
+    s.player.y = m.y - PLAYER_RADIUS;
+    updateMen(s, SIM_DT);
+    expect(m.state).toBe('carried');
+    expect(m.holderId).toBeNull();
+  });
+
+  it('goes back to walking when his Android is gone', () => {
+    const s = createGameState(1);
+    const m = addMan(s, 3000, 'chased');
+    const a = addEnemy(s, 'android', 3500, 600);
+    a.targetId = m.id;
+    m.holderId = a.id;
+    a.dead = true;
+    updateMen(s, SIM_DT);
+    expect(m.state).toBe('walking');
+    expect(m.holderId).toBeNull();
+  });
+});

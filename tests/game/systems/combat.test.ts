@@ -143,3 +143,45 @@ describe('player hits', () => {
     expect(s.events.some((e) => e.type === 'gameOver')).toBe(true);
   });
 });
+
+describe('planter and android kills', () => {
+  function lowering(s: ReturnType<typeof createGameState>) {
+    const m = addMan(s, 3000, 'chased');
+    const p = addEnemy(s, 'planter', 3000, 300);
+    const a = addEnemy(s, 'android', 3000, 360);
+    p.linkedId = a.id;
+    p.tetherLen = 60;
+    a.linkedId = p.id;
+    a.targetId = m.id;
+    m.holderId = a.id;
+    return { m, p, a };
+  }
+
+  it('killing a Planter while it lowers drops its Android, which is then worth 500', () => {
+    const s = createGameState(1);
+    const { p, a } = lowering(s);
+    killEnemy(s, p);
+    expect(a.falling).toBe(true);
+    expect(a.linkedId).toBeNull();
+    expect(s.score).toBe(ENEMY_STATS.planter.points);
+    killEnemy(s, a);
+    expect(s.score).toBe(ENEMY_STATS.planter.points + 500 * 2); // second kill in the combo window is x2
+  });
+
+  it('a lowering or walking Android is worth 50', () => {
+    const s = createGameState(1);
+    const { a } = lowering(s);
+    killEnemy(s, a);
+    expect(s.score).toBe(50);
+  });
+
+  it('killing a lowering Android turns its Planter into a Nemesite and frees the man', () => {
+    const s = createGameState(1);
+    const { m, p, a } = lowering(s);
+    killEnemy(s, a);
+    expect(p.kind).toBe('nemesite');
+    expect(p.linkedId).toBeNull();
+    expect(m.state).toBe('walking');
+    expect(m.holderId).toBeNull();
+  });
+});

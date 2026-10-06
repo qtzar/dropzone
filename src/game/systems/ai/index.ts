@@ -1,21 +1,19 @@
-import { wrapX, shortestDx } from '../../core/world';
-import type { GameState, Enemy, Man } from '../state';
-import { emit } from '../events';
-import { groundYAt } from '../terrain';
-import { findMan } from '../query';
-import { convertEnemy, resetFireTimer } from '../entities/enemies';
+import { wrapX, shortestDx } from '../../../core/world';
+import type { GameState, Enemy, Man } from '../../state';
+import { emit } from '../../events';
+import { groundYAt } from '../../terrain';
+import { findMan } from '../../query';
+import { convertEnemy, resetFireTimer } from '../../entities/enemies';
 import {
   CEILING_Y, SNATCH_CARRY_OFFSET, SNATCH_GRACE, TRAIL_LIFE, TRAIL_INTERVAL,
   ENEMY_SHOT_SPEED, ENEMY_SHOT_LIFE, ENEMY_FIRE_RANGE,
-} from '../constants';
+} from '../../constants';
+import { playerVisible, homeOnPlayer } from './common';
+import { updatePlanter, updateAndroid } from './planter';
 
 const SNATCHER_SEEK_RANGE = 2500;
 const GRAB_DISTANCE = 10;
 const TRAILER_AMPLITUDE = 80;
-
-function playerVisible(s: GameState): boolean {
-  return s.player.alive && !s.player.cloakActive;
-}
 
 /** Grace period over, abductor cap not reached, and at least one man is walking. */
 function canPickTarget(s: GameState, e: Enemy): boolean {
@@ -98,20 +96,6 @@ function updateSnatcher(s: GameState, e: Enemy): void {
   e.vy = (dy / dist) * e.speed;
 }
 
-function updateHomer(s: GameState, e: Enemy, dt: number, turnRate: number): void {
-  if (!playerVisible(s)) {
-    e.vx *= 0.99;
-    e.vy = Math.sin(e.phase) * 40;
-    return;
-  }
-  const dx = shortestDx(e.x, s.player.x);
-  const dy = s.player.y - e.y;
-  const d = Math.hypot(dx, dy) || 1;
-  const k = Math.min(1, dt * turnRate);
-  e.vx += ((dx / d) * e.speed - e.vx) * k;
-  e.vy += ((dy / d) * e.speed - e.vy) * k;
-}
-
 function updateTrailer(s: GameState, e: Enemy, dt: number): void {
   e.vx = Math.sign(e.vx || 1) * e.speed;
   const targetY = e.homeY + Math.sin(e.phase * 2.5) * TRAILER_AMPLITUDE;
@@ -174,16 +158,26 @@ export function updateEnemies(s: GameState, dt: number): void {
         updateSnatcher(s, e);
         break;
       case 'nemesite':
-        updateHomer(s, e, dt, 2);
+        homeOnPlayer(s, e, dt, 2);
         break;
       case 'hunter':
-        updateHomer(s, e, dt, 4);
+        homeOnPlayer(s, e, dt, 4);
         break;
       case 'trailer':
         updateTrailer(s, e, dt);
         break;
+      case 'planter':
+        updatePlanter(s, e, dt);
+        break;
+      case 'android':
+        updateAndroid(s, e, dt);
+        break;
       case 'orb':
       case 'fragment':
+      case 'spore':
+      case 'blunderstorm':
+      case 'nmeye':
+      case 'antimatter':
         break;
     }
     integrate(s, e, dt);

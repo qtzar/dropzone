@@ -1,8 +1,8 @@
 import { range } from '../../core/rng';
 import type { GameState, Enemy } from '../state';
 import { emit } from '../events';
-import { findMan } from '../query';
-import { ENEMY_STATS, createEnemy } from '../entities/enemies';
+import { findMan, findEnemy } from '../query';
+import { createEnemy, convertEnemy, killPoints } from '../entities/enemies';
 import { laserHitsCircle, circlesOverlap } from './collision';
 import { registerKill, resetCombo } from './scoring';
 import {
@@ -27,6 +27,30 @@ export function killEnemy(s: GameState, e: Enemy): void {
     e.carryingId = null;
   }
 
+  if (e.kind === 'planter' && e.linkedId !== null) {
+    // Killed while lowering: its Android drops.
+    const android = findEnemy(s, e.linkedId);
+    if (android && android.linkedId === e.id) {
+      android.linkedId = null;
+      android.falling = true;
+      android.vy = 0;
+    }
+  }
+
+  if (e.kind === 'android') {
+    if (e.linkedId !== null) {
+      const planter = findEnemy(s, e.linkedId);
+      if (planter && planter.linkedId === e.id) convertEnemy(s, planter, 'nemesite');
+    }
+    if (e.targetId !== null) {
+      const m = findMan(s, e.targetId);
+      if (m && m.state === 'chased' && m.holderId === e.id) {
+        m.state = 'walking';
+        m.holderId = null;
+      }
+    }
+  }
+
   if (e.kind === 'orb') {
     for (let i = 0; i < ORB_FRAGMENTS; i++) {
       const a = (i / ORB_FRAGMENTS) * Math.PI * 2 + range(s.rng, 0, 0.5);
@@ -37,7 +61,7 @@ export function killEnemy(s: GameState, e: Enemy): void {
     }
   }
 
-  registerKill(s, ENEMY_STATS[e.kind].points, e.x, e.y);
+  registerKill(s, killPoints(e), e.x, e.y);
   emit(s, { type: 'explosion', x: e.x, y: e.y, source: e.kind, big: e.kind === 'hunter' || e.kind === 'orb' });
   if (e.kind === 'hunter') s.hitStop = Math.max(s.hitStop, HITSTOP_HUNTER);
 }

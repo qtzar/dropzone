@@ -84,10 +84,34 @@ export class CanvasRenderer implements Renderer {
       const sx = toScreenX(m.x, camX);
       if (!onScreen(sx, 40)) continue;
       drawSprite(ctx, this.sprites.man, sx, m.y, m.dir < 0);
+      if (m.state === 'chased' && Math.floor(s.time * 6) % 2 === 0) {
+        ctx.fillStyle = PALETTE.warn;
+        ctx.font = 'bold 16px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('!', sx, m.y - 16);
+        ctx.textAlign = 'left';
+      }
     }
   }
 
+  private drawTethers(ctx: CanvasRenderingContext2D, s: GameState, camX: number): void {
+    ctx.strokeStyle = PALETTE.planter;
+    ctx.lineWidth = 1.5;
+    ctx.globalAlpha = 0.8;
+    for (const e of s.enemies) {
+      if (e.kind !== 'planter' || e.linkedId === null) continue;
+      const sx = toScreenX(e.x, camX);
+      if (!onScreen(sx, 60)) continue;
+      ctx.beginPath();
+      ctx.moveTo(sx, e.y + e.radius * 0.5);
+      ctx.lineTo(sx, e.y + e.tetherLen);
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+  }
+
   private drawEnemies(ctx: CanvasRenderingContext2D, s: GameState, camX: number): void {
+    this.drawTethers(ctx, s, camX);
     for (const e of s.enemies) {
       const sx = toScreenX(e.x, camX);
       if (!onScreen(sx, 60)) continue;

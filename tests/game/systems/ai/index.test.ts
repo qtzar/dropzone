@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { createGameState } from '../../../src/game/state';
-import { updateEnemies, updateShots, updateTrails } from '../../../src/game/systems/ai';
-import { SIM_DT, CEILING_Y, SNATCH_CARRY_OFFSET, TRAIL_LIFE, SNATCH_GRACE } from '../../../src/game/constants';
-import { WORLD_W } from '../../../src/core/world';
-import { addMan, addEnemy } from '../helpers';
+import { createGameState } from '../../../../src/game/state';
+import { updateEnemies, updateShots, updateTrails } from '../../../../src/game/systems/ai';
+import { SIM_DT, CEILING_Y, SNATCH_CARRY_OFFSET, TRAIL_LIFE, SNATCH_GRACE } from '../../../../src/game/constants';
+import { WORLD_W } from '../../../../src/core/world';
+import { addMan, addEnemy } from '../../helpers';
 
 function tick(s: ReturnType<typeof createGameState>, seconds: number) {
   for (let t = 0; t < seconds; t += SIM_DT) updateEnemies(s, SIM_DT);
