@@ -1,54 +1,55 @@
 import { createView } from './render/canvas';
-import { InputManager, consumeEdges } from './core/input';
-import { newGame } from './game/systems/waves';
-import { update } from './game/update';
+import { InputManager } from './core/input';
 import { startLoop } from './core/loop';
 import { SIM_DT } from './game/constants';
 import { CanvasRenderer } from './render/renderer';
-import { createCamera, updateCamera } from './render/camera';
-import { Effects } from './render/effects';
-import { lerpWrapped } from './core/world';
-import { AudioEngine } from './audio/engine';
-import { Sfx } from './audio/sfx';
-import { Music } from './audio/music';
-import { createEventAudio } from './audio/eventAudio';
+import { App } from './scenes/app';
 
-const view = createView(document.getElementById('game') as HTMLCanvasElement);
-const input = new InputManager(window);
-const state = newGame((Math.random() * 2 ** 32) >>> 0);
-const camera = createCamera(state.player.x);
-const renderer = new CanvasRenderer(view);
-const fx = new Effects();
-const audio = new AudioEngine();
-const music = new Music(audio);
-const playEvents = createEventAudio(new Sfx(audio), () => performance.now() / 1000);
-let actions = input.poll();
+const canvas = document.getElementById('game') as HTMLCanvasElement;
+let stop: (() => void) | null = null;
 
-const unlockAudio = () => {
-  audio.unlock();
-  music.start();
-};
-window.addEventListener('keydown', unlockAudio);
-window.addEventListener('pointerdown', unlockAudio);
+function showError(message: string): void {
+  if (stop) stop();
+  stop = null;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+  const dpr = window.devicePixelRatio || 1;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.globalAlpha = 1;
+  ctx.fillStyle = 'rgba(30,0,0,0.92)';
+  ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
+  ctx.fillStyle = '#ffffff';
+  ctx.font = '16px monospace';
+  ctx.fillText('Dropzone hit an error and stopped:', 24, 40);
+  ctx.fillStyle = '#ff8a8a';
+  ctx.fillText(message.slice(0, 200), 24, 70);
+  ctx.fillStyle = '#ffffff';
+  ctx.fillText('Reload the page to try again.', 24, 100);
+}
 
-startLoop(
-  {
-    step(dt) {
-      update(state, actions, dt);
-      actions = consumeEdges(actions);
+window.addEventListener('error', (e) => showError(e.message || String(e.error)));
+window.addEventListener('unhandledrejection', (e) => showError(String(e.reason)));
+
+try {
+  const view = createView(canvas);
+  const app = new App(new CanvasRenderer(view), new InputManager(window));
+
+  const unlock = () => app.unlockAudio();
+  window.addEventListener('keydown', unlock);
+  window.addEventListener('pointerdown', unlock);
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) app.pause();
+  });
+  window.addEventListener('blur', () => app.pause());
+
+  stop = startLoop(
+    {
+      step: (dt) => app.step(dt),
+      render: (alpha, frameDt) => app.frame(alpha, frameDt),
+      timeScale: () => app.timeScale(),
     },
-    render(alpha, frameDt) {
-      playEvents(state.events);
-      fx.consume(state.events, state);
-      state.events.length = 0;
-      fx.update(frameDt, state);
-      music.setIntensity(state.critical ? 2 : state.wave >= 5 ? 1 : 0);
-      const px = lerpWrapped(state.player.prevX, state.player.x, alpha);
-      updateCamera(camera, px, state.player.facing, frameDt);
-      renderer.render(state, camera, alpha, fx);
-      actions = input.poll();
-    },
-    timeScale: () => fx.timeScale(),
-  },
-  SIM_DT,
-);
+    SIM_DT,
+  );
+} catch (err) {
+  showError(err instanceof Error ? err.message : String(err));
+}
