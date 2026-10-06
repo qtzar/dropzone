@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { SCANNER, scannerPos } from '../../src/render/hud';
+import { SCANNER, scannerPos, scannerTerrainOffsets } from '../../src/render/hud';
 import { WORLD_W, VIEW_H } from '../../src/core/world';
 import { CEILING_Y } from '../../src/game/constants';
 
@@ -22,5 +22,16 @@ describe('scannerPos', () => {
     expect(scannerPos(0, CEILING_Y, 0).y).toBe(SCANNER.y + 4);
     expect(scannerPos(0, VIEW_H, 0).y).toBe(SCANNER.y + SCANNER.h - 4);
     expect(scannerPos(0, -500, 0).y).toBe(SCANNER.y + 4);
+  });
+});
+
+describe('scanner mini-terrain', () => {
+  it('produces strictly increasing scanner x positions (no wrap-around segment)', () => {
+    for (const camX of [0, 5000, WORLD_W - 1]) {
+      const xs = scannerTerrainOffsets(128).map((dx) => scannerPos(camX + dx, CEILING_Y, camX).x);
+      for (let i = 1; i < xs.length; i++) expect(xs[i]).toBeGreaterThan(xs[i - 1]);
+      expect(xs[0]).toBeGreaterThanOrEqual(SCANNER.x);
+      expect(xs[xs.length - 1]).toBeLessThanOrEqual(SCANNER.x + SCANNER.w);
+    }
   });
 });

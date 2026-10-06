@@ -12,6 +12,13 @@ export function scannerPos(wx: number, wy: number, camX: number): { x: number; y
   return { x, y: SCANNER.y + 4 + t * (SCANNER.h - 8) };
 }
 
+/** World-x offsets (relative to the camera) for the scanner's mini-terrain, left to right, never hitting the ambiguous -WORLD_W/2 point. */
+export function scannerTerrainOffsets(step: number): number[] {
+  const out: number[] = [];
+  for (let dx = -WORLD_W / 2 + step; dx <= WORLD_W / 2; dx += step) out.push(dx);
+  return out;
+}
+
 function blip(ctx: CanvasRenderingContext2D, s: { x: number; y: number }, color: string, size: number): void {
   ctx.fillStyle = color;
   ctx.fillRect(s.x - size / 2, s.y - size / 2, size, size);
@@ -44,9 +51,11 @@ function drawScanner(ctx: CanvasRenderingContext2D, s: GameState, camX: number):
   ctx.strokeStyle = s.critical ? PALETTE.terrainCritical : PALETTE.terrain;
   ctx.beginPath();
   const step = 128;
-  for (let dx = -WORLD_W / 2; dx <= WORLD_W / 2; dx += step) {
+  const offsets = scannerTerrainOffsets(step);
+  for (let i = 0; i < offsets.length; i++) {
+    const dx = offsets[i];
     const p = scannerPos(camX + dx, groundYAt(s.terrain, camX + dx), camX);
-    if (dx === -WORLD_W / 2) ctx.moveTo(p.x, p.y);
+    if (i === 0) ctx.moveTo(p.x, p.y);
     else ctx.lineTo(p.x, p.y);
   }
   ctx.stroke();
@@ -81,7 +90,7 @@ function drawLeftPanel(ctx: CanvasRenderingContext2D, s: GameState): void {
   ctx.fillStyle = s.multiplier > 1 ? PALETTE.hunter : PALETTE.hud;
   ctx.fillText(`x${s.multiplier}`, 16, 66);
   if (s.multiplier > 1) {
-    ctx.fillRect(56, 60, 80 * (s.comboTimer / COMBO_WINDOW), 4);
+    ctx.fillRect(56, 60, 80 * clamp(s.comboTimer / COMBO_WINDOW, 0, 1), 4);
   }
   ctx.fillStyle = PALETTE.hud;
   ctx.font = '12px monospace';
@@ -136,6 +145,7 @@ function drawCenterMessages(ctx: CanvasRenderingContext2D, s: GameState): void {
 }
 
 export function drawHud(ctx: CanvasRenderingContext2D, s: GameState, camX: number): void {
+  ctx.save();
   ctx.fillStyle = 'rgba(0,0,0,0.55)';
   ctx.fillRect(0, 0, VIEW_W, SCANNER_H);
   ctx.strokeStyle = 'rgba(154,216,255,0.35)';
@@ -148,4 +158,5 @@ export function drawHud(ctx: CanvasRenderingContext2D, s: GameState, camX: numbe
   drawLeftPanel(ctx, s);
   drawRightPanel(ctx, s);
   drawCenterMessages(ctx, s);
+  ctx.restore();
 }
