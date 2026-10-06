@@ -3,7 +3,7 @@ import { createGameState } from '../../../src/game/state';
 import { NO_ACTIONS } from '../../../src/core/input';
 import { updateCloak, triggerBomb, updateRespawn, RESPAWN_Y } from '../../../src/game/systems/powerups';
 import { CLOAK_DRAIN, RESPAWN_DELAY, RESPAWN_INVULN, START_BOMBS, HITSTOP_MULTI } from '../../../src/game/constants';
-import { CAMERA_LEAD } from '../../../src/core/world';
+import { CAMERA_LEAD, WORLD_W, VIEW_W, shortestDx } from '../../../src/core/world';
 import { addEnemy } from '../helpers';
 
 const CLOAK = { ...NO_ACTIONS, cloak: true };
@@ -101,6 +101,41 @@ describe('updateRespawn', () => {
     expect(s.player.y).toBe(RESPAWN_Y);
     expect(s.player.invuln).toBe(RESPAWN_INVULN);
     expect(s.events.some((e) => e.type === 'playerRespawned')).toBe(true);
+  });
+
+  function dead(s: ReturnType<typeof createGameState>) {
+    s.player.alive = false;
+    s.player.respawnTimer = 0;
+  }
+
+  it('respawns away from enemies that gathered at the death point', () => {
+    const s = createGameState(1);
+    dead(s);
+    for (let i = 0; i < 5; i++) addEnemy(s, 'nemesite', s.baseX + i * 40, 300);
+    updateRespawn(s, 0.1);
+    expect(s.player.alive).toBe(true);
+    for (const e of s.enemies) expect(Math.abs(shortestDx(s.player.x, e.x))).toBeGreaterThanOrEqual(WORLD_W / 4);
+  });
+
+  it('clears enemy shots near the respawn point', () => {
+    const s = createGameState(1);
+    dead(s);
+    const x = s.baseX;
+    s.shots = [
+      { x: x + 100, y: 300, vx: 0, vy: 0, life: 1 },
+      { x: x + VIEW_W, y: 300, vx: 0, vy: 0, life: 1 },
+    ];
+    updateRespawn(s, 0.1);
+    expect(s.player.x).toBe(x);
+    expect(s.shots).toHaveLength(1);
+  });
+
+  it('respawns at baseX when there are no enemies', () => {
+    const s = createGameState(1);
+    dead(s);
+    s.player.x = 123;
+    updateRespawn(s, 0.1);
+    expect(s.player.x).toBe(s.baseX);
   });
 
   it('does not respawn after game over', () => {

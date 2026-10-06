@@ -1,5 +1,5 @@
 import type { Actions } from '../../core/input';
-import { VIEW_W, CAMERA_LEAD, wrapX, shortestDx } from '../../core/world';
+import { VIEW_W, CAMERA_LEAD, WORLD_W, wrapX, shortestDx } from '../../core/world';
 import type { GameState, Enemy } from '../state';
 import { emit } from '../events';
 import { killEnemy } from './combat';
@@ -38,11 +38,31 @@ export function triggerBomb(s: GameState): boolean {
   return true;
 }
 
+/** Of 8 evenly spaced candidates, the one furthest from any living enemy (ties: lowest index). */
+function pickRespawnX(s: GameState): number {
+  let bestX = s.baseX;
+  let bestMin = -1;
+  for (let i = 0; i < 8; i++) {
+    const x = wrapX(s.baseX + (i * WORLD_W) / 8);
+    let min = Infinity;
+    for (const e of s.enemies) {
+      if (e.dead) continue;
+      min = Math.min(min, Math.abs(shortestDx(x, e.x)));
+    }
+    if (min > bestMin) {
+      bestMin = min;
+      bestX = x;
+    }
+  }
+  return bestX;
+}
+
 export function updateRespawn(s: GameState, dt: number): void {
   const p = s.player;
   if (p.alive || s.phase === 'gameOver') return;
   p.respawnTimer -= dt;
   if (p.respawnTimer > 0) return;
+  p.x = pickRespawnX(s);
   p.alive = true;
   p.y = RESPAWN_Y;
   p.prevX = p.x;
@@ -52,5 +72,6 @@ export function updateRespawn(s: GameState, dt: number): void {
   p.invuln = RESPAWN_INVULN;
   p.heat = 0;
   p.overheated = false;
+  s.shots = s.shots.filter((sh) => Math.abs(shortestDx(p.x, sh.x)) > VIEW_W / 2);
   emit(s, { type: 'playerRespawned', x: p.x, y: p.y });
 }
