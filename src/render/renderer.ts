@@ -6,6 +6,7 @@ import type { Camera } from './camera';
 import { Background } from './background';
 import { createSprites, drawSprite, type Sprite, type SpriteKey } from './sprites';
 import { PALETTE } from './palette';
+import { drawHud } from './hud';
 
 export interface FxLayer {
   shake(): { x: number; y: number };
@@ -59,8 +60,10 @@ export class CanvasRenderer implements Renderer {
     this.view.endFrame();
   }
 
-  /** Screen-space overlays drawn on top of the world (HUD is added here in Task 6). */
-  protected drawOverlays(_ctx: CanvasRenderingContext2D, _s: GameState, _cam: Camera): void {}
+  /** Screen-space overlays drawn on top of the world. */
+  protected drawOverlays(ctx: CanvasRenderingContext2D, s: GameState, cam: Camera): void {
+    drawHud(ctx, s, cam.x);
+  }
 
   private drawPlayer(ctx: CanvasRenderingContext2D, s: GameState, camX: number, alpha: number): void {
     const p = s.player;
