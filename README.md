@@ -2,6 +2,8 @@
 
 A browser remake of the 1984 Atari 8-bit and Commodore 64 classic **Dropzone**, with neon vector graphics and synthesized sound. It runs in any modern desktop browser, with keyboard or gamepad.
 
+**▶ Play it now: https://qtzar.github.io/dropzone/**
+
 > **An unofficial fan tribute.** This project is not affiliated with, endorsed by, or connected to Archer MacLean, Arena Graphics, U.S. Gold, or any rights holder. It contains no original code, graphics, or sound. Everything is recreated from scratch, out of affection for the original.
 
 ## A short history
@@ -59,5 +61,7 @@ npm run dev       # start the dev server, then open the printed URL
 npm test          # run the test suite
 npm run build     # production build into dist/ (static files, host anywhere)
 ```
+
+Every push to `main` is tested, built and deployed to GitHub Pages by `.github/workflows/deploy.yml`.
 
 Built with TypeScript, Vite, Vitest, Canvas 2D and the Web Audio API. There are no runtime dependencies.
