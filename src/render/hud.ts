@@ -99,6 +99,11 @@ function drawLeftPanel(ctx: CanvasRenderingContext2D, s: GameState): void {
   ctx.fillText(`WAVE ${s.wave}`, 150, 66);
 }
 
+/** HUD text for the shield bank, e.g. "SHIELD 12.4s". */
+export function shieldLabel(bank: number): string {
+  return `SHIELD ${bank.toFixed(1)}s`;
+}
+
 function drawRightPanel(ctx: CanvasRenderingContext2D, s: GameState): void {
   const x0 = 1056;
   ctx.fillStyle = PALETTE.player;
@@ -115,14 +120,16 @@ function drawRightPanel(ctx: CanvasRenderingContext2D, s: GameState): void {
   ctx.lineWidth = 1.5;
   for (let i = 0; i < MAX_BOMBS; i++) {
     ctx.beginPath();
-    ctx.arc(x0 + 110 + i * 18, 18, 6, 0, Math.PI * 2);
+    ctx.arc(x0 + 110 + i * 11, 18, 4, 0, Math.PI * 2);
     if (i < s.bombs) {
       ctx.fillStyle = PALETTE.gold;
       ctx.fill();
     }
     ctx.stroke();
   }
-  meter(ctx, x0, 46, 200, s.player.cloak, PALETTE.player, 'CLOAK');
+  ctx.font = '12px monospace';
+  ctx.fillStyle = s.player.cloakActive ? PALETTE.player : PALETTE.hud;
+  ctx.fillText(shieldLabel(s.shieldBank), x0, 44);
   meter(ctx, x0, 66, 200, s.player.heat, s.player.overheated ? PALETTE.warn : PALETTE.trailer, s.player.overheated ? 'OVERHEAT' : 'HEAT');
 }
 

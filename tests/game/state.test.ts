@@ -24,7 +24,6 @@ describe('createGameState', () => {
     expect(s.player.y).toBeLessThan(groundYAt(s.terrain, s.baseX));
     expect(s.player.alive).toBe(true);
     expect(s.player.facing).toBe(1);
-    expect(s.player.cloak).toBe(1);
     expect(s.player.carryingId).toBeNull();
   });
 

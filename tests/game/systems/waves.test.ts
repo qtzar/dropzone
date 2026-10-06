@@ -7,7 +7,7 @@ import { getWaveTuning } from '../../../src/game/tuning';
 import { registerKill } from '../../../src/game/systems/scoring';
 import {
   MEN_PER_WAVE, NMEYE_DELAY, NMEYE_REPEAT, SPAWN_SAFE_DISTANCE, WAVE_COMPLETE_TIME,
-  START_BOMBS, MAX_BOMBS,
+  START_BOMBS, SHIELD_START, SHIELD_PER_WAVE,
 } from '../../../src/game/constants';
 import { shortestDx } from '../../../src/core/world';
 import { addMan, addEnemy } from '../helpers';
@@ -51,12 +51,10 @@ describe('startWave', () => {
     const s = createGameState(1);
     s.unstable = true;
     s.savedThisWave = 4;
-    s.player.cloak = 0;
     s.shots.push({ x: 0, y: 0, vx: 0, vy: 0, life: 1 });
     startWave(s, 2);
     expect(s.unstable).toBe(false);
     expect(s.savedThisWave).toBe(0);
-    expect(s.player.cloak).toBe(1);
     expect(s.shots).toHaveLength(0);
     expect(s.waveTime).toBe(0);
     expect(s.nextNmeyeAt).toBe(NMEYE_DELAY);
@@ -102,16 +100,25 @@ describe('invasion waves', () => {
 });
 
 describe('shipments', () => {
-  it('the wave after an invasion tops the men back up to 8 and gives a bomb', () => {
+  it('the wave after an invasion tops the men back up to 8 (no bonus bomb any more)', () => {
     const s = createGameState(1);
     s.survivors = 0;
     startWave(s, 6);
     expect(s.men).toHaveLength(MEN_PER_WAVE);
     expect(s.survivors).toBe(MEN_PER_WAVE);
-    expect(s.bombs).toBe(START_BOMBS + 1);
-    s.bombs = MAX_BOMBS;
-    startWave(s, 11);
-    expect(s.bombs).toBe(MAX_BOMBS);
+    expect(s.bombs).toBe(START_BOMBS);
+  });
+});
+
+describe('shield bank', () => {
+  it('starts at 7 s and gains 7 s at the start of every later wave, with no cap', () => {
+    const s = createGameState(1);
+    startWave(s, 1);
+    expect(s.shieldBank).toBe(SHIELD_START);
+    startWave(s, 2);
+    expect(s.shieldBank).toBe(SHIELD_START + SHIELD_PER_WAVE);
+    for (let w = 3; w <= 10; w++) startWave(s, w);
+    expect(s.shieldBank).toBe(SHIELD_START + 9 * SHIELD_PER_WAVE);
   });
 });
 

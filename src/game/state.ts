@@ -19,9 +19,8 @@ export interface Player {
   alive: boolean;
   respawnTimer: number;
   invuln: number;
+  /** Shield (cloak) on; it drains s.shieldBank. */
   cloakActive: boolean;
-  /** Cloak meter, 0..1. */
-  cloak: number;
   /** Laser heat, 0..1. */
   heat: number;
   overheated: boolean;
@@ -227,7 +226,6 @@ export function createGameState(seed: number): GameState {
       respawnTimer: 0,
       invuln: 0,
       cloakActive: false,
-      cloak: 1,
       heat: 0,
       overheated: false,
       fireCooldown: 0,

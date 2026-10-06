@@ -99,6 +99,17 @@ describe('player hits', () => {
     expect(s.player.alive).toBe(true);
   });
 
+  it('losing a life costs 10 points, never going below 0', () => {
+    const s = createGameState(1);
+    s.score = 1234;
+    killPlayer(s);
+    expect(s.score).toBe(1224);
+    const t = createGameState(1);
+    t.score = 4;
+    killPlayer(t);
+    expect(t.score).toBe(0);
+  });
+
   it('losing the last life ends the game', () => {
     const s = createGameState(1);
     s.lives = 1;

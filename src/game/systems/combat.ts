@@ -6,7 +6,7 @@ import { laserHitsCircle, circlesOverlap } from './collision';
 import { registerKill, resetCombo } from './scoring';
 import { releaseTrailers, trailerHeadHit } from './ai/spawners';
 import {
-  HITSTOP_MULTI, HITSTOP_NMEYE, PLAYER_RADIUS, MAN_RADIUS, RESPAWN_DELAY,
+  HITSTOP_MULTI, HITSTOP_NMEYE, PLAYER_RADIUS, MAN_RADIUS, RESPAWN_DELAY, DEATH_PENALTY,
 } from '../constants';
 
 const SHOT_RADIUS = 3;
@@ -87,6 +87,7 @@ export function killPlayer(s: GameState): void {
     p.carryingId = null;
   }
   resetCombo(s);
+  s.score = Math.max(0, s.score - DEATH_PENALTY);
   s.lives -= 1;
   emit(s, { type: 'playerDied', x: p.x, y: p.y });
   emit(s, { type: 'explosion', x: p.x, y: p.y, source: 'player', big: true });

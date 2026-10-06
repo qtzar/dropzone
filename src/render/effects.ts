@@ -157,7 +157,7 @@ export class Effects implements FxLayer {
           this.popup(e.x, e.y - 20, 'MAN LOST', PALETTE.warn);
           break;
         case 'extraLife':
-          this.popup(s.player.x, s.player.y - 40, 'EXTRA LIFE', PALETTE.player);
+          this.popup(s.player.x, s.player.y - 40, 'EXTRA LIFE + BOMB', PALETTE.player);
           break;
         case 'planetUnstable':
           this.addTrauma(0.5);

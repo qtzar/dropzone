@@ -25,13 +25,20 @@ export const OVERHEAT_UNLOCK = 0.35;
 
 // Lives, bombs, cloak
 export const START_LIVES = 3;
+/** Every 10,000 points gives +1 life and +1 smart bomb... */
 export const EXTRA_LIFE_EVERY = 10000;
+/** ...up to this score, after which there are no more awards. */
+export const EXTRA_AWARD_LIMIT = 1_000_000;
+/** Points lost per death (the score never goes below 0). */
+export const DEATH_PENALTY = 10;
 export const START_BOMBS = 3;
-export const MAX_BOMBS = 5;
-/** Cloak meter drained per second while active (meter is 0..1, so 4 s total). */
-export const CLOAK_DRAIN = 0.25;
+export const MAX_BOMBS = 9;
 /** Shield (cloak) seconds at the start of a game. */
 export const SHIELD_START = 7;
+/** Shield seconds added at the start of every wave after the first (no cap). */
+export const SHIELD_PER_WAVE = 7;
+/** Shield seconds drained per second while the shield is on. */
+export const SHIELD_DRAIN = 1;
 export const RESPAWN_DELAY = 2;
 export const RESPAWN_INVULN = 2;
 

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { SCANNER, scannerPos, scannerTerrainOffsets } from '../../src/render/hud';
+import { SCANNER, scannerPos, scannerTerrainOffsets, shieldLabel } from '../../src/render/hud';
 import { WORLD_W, VIEW_H } from '../../src/core/world';
 import { CEILING_Y } from '../../src/game/constants';
 
@@ -33,5 +33,13 @@ describe('scanner mini-terrain', () => {
       expect(xs[0]).toBeGreaterThanOrEqual(SCANNER.x);
       expect(xs[xs.length - 1]).toBeLessThanOrEqual(SCANNER.x + SCANNER.w);
     }
+  });
+});
+
+describe('shieldLabel', () => {
+  it('shows the shield bank in seconds with one decimal', () => {
+    expect(shieldLabel(12.4)).toBe('SHIELD 12.4s');
+    expect(shieldLabel(7)).toBe('SHIELD 7.0s');
+    expect(shieldLabel(0)).toBe('SHIELD 0.0s');
   });
 });

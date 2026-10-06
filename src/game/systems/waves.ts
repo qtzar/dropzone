@@ -10,7 +10,7 @@ import { spawnMen } from './rescue';
 import { addScore } from './scoring';
 import { clearHazards } from './hazards';
 import {
-  CEILING_Y, NMEYE_DELAY, NMEYE_REPEAT, MEN_PER_WAVE, MAX_BOMBS,
+  CEILING_Y, NMEYE_DELAY, NMEYE_REPEAT, MEN_PER_WAVE, SHIELD_PER_WAVE,
   SPAWN_SAFE_DISTANCE, WAVE_COMPLETE_TIME, WAVE_BONUS_PER_MAN, WAVE_BONUS_CAP,
 } from '../constants';
 
@@ -33,10 +33,9 @@ export function startWave(s: GameState, wave: number): void {
   s.phase = 'playing';
   s.phaseTimer = 0;
 
-  if (isShipmentWave(wave)) {
-    s.survivors = MEN_PER_WAVE;
-    s.bombs = Math.min(MAX_BOMBS, s.bombs + 1);
-  }
+  if (isShipmentWave(wave)) s.survivors = MEN_PER_WAVE;
+  // The game starts with SHIELD_START seconds; every later wave adds more (no cap).
+  if (wave > 1) s.shieldBank += SHIELD_PER_WAVE;
 
   const t = getWaveTuning(effectiveWave(wave));
   s.speedScale = t.speedScale;
@@ -48,7 +47,6 @@ export function startWave(s: GameState, wave: number): void {
   s.lasers = [];
   s.men = [];
   s.player.carryingId = null;
-  s.player.cloak = 1;
 
   const invasion = isInvasionWave(wave);
   // Invasion waves have no men: the survivors wait for the next wave.

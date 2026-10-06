@@ -2,18 +2,21 @@ import { describe, it, expect } from 'vitest';
 import { createGameState } from '../../../src/game/state';
 import { NO_ACTIONS } from '../../../src/core/input';
 import { updateCloak, triggerBomb, updateRespawn, RESPAWN_Y } from '../../../src/game/systems/powerups';
-import { CLOAK_DRAIN, RESPAWN_DELAY, RESPAWN_INVULN, START_BOMBS, HITSTOP_MULTI } from '../../../src/game/constants';
+import {
+  SHIELD_START, SHIELD_DRAIN, RESPAWN_DELAY, RESPAWN_INVULN, START_BOMBS, HITSTOP_MULTI,
+} from '../../../src/game/constants';
 import { CAMERA_LEAD, WORLD_W, VIEW_W, shortestDx } from '../../../src/core/world';
 import { addEnemy } from '../helpers';
 
 const CLOAK = { ...NO_ACTIONS, cloak: true };
 
-describe('updateCloak', () => {
-  it('activates while held and drains the meter', () => {
+describe('updateCloak (shield bank)', () => {
+  it('activates while held and drains 1 s of shield per second', () => {
     const s = createGameState(1);
+    expect(s.shieldBank).toBe(SHIELD_START);
     updateCloak(s, CLOAK, 1);
     expect(s.player.cloakActive).toBe(true);
-    expect(s.player.cloak).toBeCloseTo(1 - CLOAK_DRAIN);
+    expect(s.shieldBank).toBeCloseTo(SHIELD_START - SHIELD_DRAIN);
     expect(s.events).toContainEqual({ type: 'cloakOn' });
   });
 
@@ -22,14 +25,15 @@ describe('updateCloak', () => {
     updateCloak(s, CLOAK, 0.1);
     updateCloak(s, NO_ACTIONS, 0.1);
     expect(s.player.cloakActive).toBe(false);
+    expect(s.shieldBank).toBeCloseTo(SHIELD_START - 0.1);
     expect(s.events).toContainEqual({ type: 'cloakOff' });
   });
 
-  it('turns off when the meter is empty', () => {
+  it('turns off when the bank is empty', () => {
     const s = createGameState(1);
-    s.player.cloak = 0.01;
+    s.shieldBank = 0.01;
     updateCloak(s, CLOAK, 1);
-    expect(s.player.cloak).toBe(0);
+    expect(s.shieldBank).toBe(0);
     updateCloak(s, CLOAK, 0.01);
     expect(s.player.cloakActive).toBe(false);
   });
@@ -69,6 +73,36 @@ describe('triggerBomb', () => {
     expect(ahead.dead).toBe(true);
     expect(behind.dead).toBe(false);
     expect(CAMERA_LEAD).toBeGreaterThan(0);
+  });
+
+  it('spares Androids', () => {
+    const s = createGameState(1);
+    const android = addEnemy(s, 'android', s.player.x + 200, 600);
+    const planter = addEnemy(s, 'planter', s.player.x + 250, 300);
+    triggerBomb(s);
+    expect(android.dead).toBe(false);
+    expect(planter.dead).toBe(true);
+  });
+
+  it('Spores killed by the bomb release Trailers that survive the blast', () => {
+    const s = createGameState(1);
+    addEnemy(s, 'spore', s.player.x + 200, 300);
+    triggerBomb(s);
+    const alive = s.enemies.filter((e) => !e.dead);
+    expect(alive).toHaveLength(4);
+    expect(alive.every((e) => e.kind === 'trailer')).toBe(true);
+  });
+
+  it('clears acid, magma and Nmeye bombs on screen', () => {
+    const s = createGameState(1);
+    s.acid.push({ x: s.player.x + 100, y: 300, vy: 220 });
+    s.magma.push({ x: s.player.x - 100, y: 300, vx: 0, vy: 0, r: 5, hot: false });
+    s.eyeBombs.push({ x: s.player.x, y: 200, vy: 180 });
+    s.acid.push({ x: s.player.x + 4000, y: 300, vy: 220 });
+    triggerBomb(s);
+    expect(s.magma).toHaveLength(0);
+    expect(s.eyeBombs).toHaveLength(0);
+    expect(s.acid).toHaveLength(1);
   });
 
   it('does nothing without bombs or while dead', () => {

@@ -1,11 +1,13 @@
 import type { GameState } from '../state';
 import { emit } from '../events';
-import { COMBO_WINDOW, MAX_MULTIPLIER, EXTRA_LIFE_EVERY } from '../constants';
+import { COMBO_WINDOW, MAX_MULTIPLIER, EXTRA_LIFE_EVERY, EXTRA_AWARD_LIMIT, MAX_BOMBS } from '../constants';
 
+/** Adds points; every 10,000 (up to 1,000,000) gives +1 life and +1 smart bomb (bombs capped at 9). */
 export function addScore(s: GameState, points: number): void {
   s.score += points;
-  while (s.score >= s.nextExtraLife) {
+  while (s.score >= s.nextExtraLife && s.nextExtraLife <= EXTRA_AWARD_LIMIT) {
     s.lives++;
+    s.bombs = Math.min(MAX_BOMBS, s.bombs + 1);
     s.nextExtraLife += EXTRA_LIFE_EVERY;
     emit(s, { type: 'extraLife' });
   }
