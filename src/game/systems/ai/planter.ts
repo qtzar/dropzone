@@ -8,7 +8,7 @@ import { createEnemy, convertEnemy } from '../../entities/enemies';
 import { circlesOverlap } from '../collision';
 import {
   BASE_WIDTH, PLANTER_RISE, PLANTER_SPOT_RANGE, TETHER_SPEED, ANDROID_CHASE_MULT, ANDROID_FALL_GRAVITY,
-  MAN_WALK_SPEED, MAN_RADIUS,
+  MAN_WALK_SPEED, MAN_RADIUS, PLANT_GRACE,
 } from '../../constants';
 
 /** A walking man (not already chased) close enough below the Planter to drop an Android on. */
@@ -46,7 +46,7 @@ export function updatePlanter(s: GameState, e: Enemy, dt: number): void {
   const targetY = e.homeY - (raised ? PLANTER_RISE : 0);
   e.vx = (e.vx < 0 ? -1 : 1) * e.speed;
   e.vy = (targetY - e.y) * 2;
-  const man = findPlantTarget(s, e);
+  const man = s.waveTime < PLANT_GRACE ? undefined : findPlantTarget(s, e);
   if (man) startLowering(s, e, man);
 }
 

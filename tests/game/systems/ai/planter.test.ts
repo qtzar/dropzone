@@ -3,7 +3,7 @@ import { createGameState, type GameState } from '../../../../src/game/state';
 import { updateEnemies } from '../../../../src/game/systems/ai';
 import { groundYAt } from '../../../../src/game/terrain';
 import {
-  SIM_DT, PLANTER_RISE, TETHER_SPEED, ANDROID_CHASE_MULT, MAN_WALK_SPEED,
+  SIM_DT, PLANT_GRACE, PLANTER_RISE, TETHER_SPEED, ANDROID_CHASE_MULT, MAN_WALK_SPEED,
 } from '../../../../src/game/constants';
 import { addMan, addEnemy } from '../../helpers';
 
@@ -53,10 +53,30 @@ describe('planter cruising', () => {
   });
 });
 
+describe('planting grace', () => {
+  it('does not plant during the first PLANT_GRACE seconds of a wave, then does', () => {
+    const s = createGameState(1);
+    plainLandscape(s);
+    addMan(s, 3000);
+    const e = planter(s, 3000);
+    e.speed = 0;
+    s.waveTime = 0;
+    updateEnemies(s, SIM_DT);
+    expect(e.linkedId).toBeNull();
+    s.waveTime = PLANT_GRACE - 0.01;
+    updateEnemies(s, SIM_DT);
+    expect(e.linkedId).toBeNull();
+    s.waveTime = PLANT_GRACE;
+    updateEnemies(s, SIM_DT);
+    expect(e.linkedId).not.toBeNull();
+  });
+});
+
 describe('planter lowering an android', () => {
   it('hovers and lowers an Android onto a walking man within 40 px', () => {
     const s = createGameState(1);
     plainLandscape(s);
+    s.waveTime = PLANT_GRACE;
     const m = addMan(s, 3000);
     const e = planter(s, 3030);
     updateEnemies(s, SIM_DT);
@@ -86,6 +106,7 @@ describe('planter lowering an android', () => {
   it('grows the tether at 120 px/s with the Android hanging at its end', () => {
     const s = createGameState(1);
     plainLandscape(s);
+    s.waveTime = PLANT_GRACE;
     addMan(s, 3000);
     const e = planter(s, 3000);
     updateEnemies(s, SIM_DT);
@@ -100,6 +121,7 @@ describe('planter lowering an android', () => {
   it('converts to a Nemesite once its Android lands', () => {
     const s = createGameState(1);
     plainLandscape(s);
+    s.waveTime = PLANT_GRACE;
     addMan(s, 3000);
     const e = planter(s, 3000);
     tick(s, 5);

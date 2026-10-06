@@ -164,3 +164,6 @@ export const SPAWN_SAFE_DISTANCE = 700;
 // Hit-stop durations (seconds)
 export const HITSTOP_MULTI = 0.03;
 export const HITSTOP_NMEYE = 0.04;
+
+/** Seconds at the start of a wave during which Planters may not start lowering an Android. */
+export const PLANT_GRACE = 3;
