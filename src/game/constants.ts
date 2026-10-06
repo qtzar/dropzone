@@ -66,6 +66,8 @@ export const ENEMY_FIRE_RANGE = 800;
 // Waves
 export const MILESTONE_EVERY = 5;
 export const WAVE_COMPLETE_TIME = 3;
+/** Seconds into a wave before any snatcher may target a man. */
+export const SNATCH_GRACE = 8;
 /** Minimum horizontal distance from the player when spawning wave enemies. */
 export const SPAWN_SAFE_DISTANCE = 700;
 

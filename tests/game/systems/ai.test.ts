@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { createGameState } from '../../../src/game/state';
 import { updateEnemies, updateShots, updateTrails } from '../../../src/game/systems/ai';
-import { SIM_DT, CEILING_Y, SNATCH_CARRY_OFFSET, TRAIL_LIFE } from '../../../src/game/constants';
+import { SIM_DT, CEILING_Y, SNATCH_CARRY_OFFSET, TRAIL_LIFE, SNATCH_GRACE } from '../../../src/game/constants';
 import { WORLD_W } from '../../../src/core/world';
 import { addMan, addEnemy } from '../helpers';
 
@@ -12,6 +12,7 @@ function tick(s: ReturnType<typeof createGameState>, seconds: number) {
 describe('snatcher', () => {
   it('seeks and grabs a walking man', () => {
     const s = createGameState(1);
+    s.waveTime = SNATCH_GRACE;
     const m = addMan(s, 3000);
     const e = addEnemy(s, 'snatcher', 3040, m.y - SNATCH_CARRY_OFFSET - 60);
     e.fireTimer = Infinity;
@@ -20,6 +21,32 @@ describe('snatcher', () => {
     expect(m.holderId).toBe(e.id);
     expect(e.carryingId).toBe(m.id);
     expect(s.events.some((ev) => ev.type === 'manSnatched')).toBe(true);
+  });
+
+  it('does not target a man during the grace period', () => {
+    const s = createGameState(1);
+    s.waveTime = 0;
+    const m = addMan(s, 3000);
+    const e = addEnemy(s, 'snatcher', 3040, m.y - SNATCH_CARRY_OFFSET - 60);
+    e.fireTimer = Infinity;
+    tick(s, 3);
+    expect(m.state).toBe('walking');
+    expect(e.targetId).toBeNull();
+  });
+
+  it('caps concurrent abductors at 1 + wave', () => {
+    const s = createGameState(1);
+    s.wave = 1;
+    s.waveTime = SNATCH_GRACE;
+    const sn = [3000, 4000, 5000].map((x) => {
+      const m = addMan(s, x);
+      const e = addEnemy(s, 'snatcher', x + 20, m.y - SNATCH_CARRY_OFFSET - 60);
+      e.fireTimer = Infinity;
+      return e;
+    });
+    tick(s, 0.5);
+    const busy = sn.filter((e) => e.targetId !== null || e.carryingId !== null);
+    expect(busy).toHaveLength(2);
   });
 
   it('kills the man and becomes a nemesite on reaching the top', () => {

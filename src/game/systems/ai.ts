@@ -5,7 +5,7 @@ import { groundYAt } from '../terrain';
 import { findMan } from '../query';
 import { convertEnemy, resetFireTimer } from '../entities/enemies';
 import {
-  CEILING_Y, SNATCH_CARRY_OFFSET, TRAIL_LIFE, TRAIL_INTERVAL,
+  CEILING_Y, SNATCH_CARRY_OFFSET, SNATCH_GRACE, TRAIL_LIFE, TRAIL_INTERVAL,
   ENEMY_SHOT_SPEED, ENEMY_SHOT_LIFE, ENEMY_FIRE_RANGE,
 } from '../constants';
 
@@ -15,6 +15,24 @@ const TRAILER_AMPLITUDE = 80;
 
 function playerVisible(s: GameState): boolean {
   return s.player.alive && !s.player.cloakActive;
+}
+
+/** Grace period over, abductor cap not reached, and at least one man is walking. */
+function canPickTarget(s: GameState, e: Enemy): boolean {
+  if (s.waveTime < SNATCH_GRACE) return false;
+  let walking = false;
+  for (const m of s.men) {
+    if (m.state === 'walking') {
+      walking = true;
+      break;
+    }
+  }
+  if (!walking) return false;
+  let abductors = 0;
+  for (const o of s.enemies) {
+    if (o !== e && !o.dead && (o.targetId !== null || o.carryingId !== null)) abductors++;
+  }
+  return abductors < 1 + s.wave;
 }
 
 function pickTarget(s: GameState, e: Enemy): Man | undefined {
@@ -54,7 +72,7 @@ function updateSnatcher(s: GameState, e: Enemy): void {
 
   let target = e.targetId !== null ? findMan(s, e.targetId) : undefined;
   if (!target || target.state !== 'walking') {
-    target = pickTarget(s, e);
+    target = canPickTarget(s, e) ? pickTarget(s, e) : undefined;
     e.targetId = target ? target.id : null;
   }
   if (!target) {
