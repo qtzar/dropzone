@@ -1,6 +1,7 @@
 import { type Rng, createRng } from '../core/rng';
 import type { GameEvent } from './events';
 import { generateTerrain } from './terrain';
+import { generateLandscape, applyLandscape, type Landscape } from './landscape';
 import { START_LIVES, START_BOMBS, EXTRA_LIFE_EVERY, MEN_PER_WAVE, CEILING_Y } from './constants';
 
 export type Facing = 1 | -1;
@@ -117,6 +118,7 @@ export interface GameState {
   phaseTimer: number;
   baseX: number;
   terrain: number[];
+  landscape: Landscape;
   player: Player;
   men: Man[];
   enemies: Enemy[];
@@ -132,6 +134,8 @@ export const BASE_X = 640;
 export function createGameState(seed: number): GameState {
   const rng = createRng(seed);
   const terrain = generateTerrain(rng, BASE_X);
+  const landscape = generateLandscape(rng, BASE_X);
+  applyLandscape(terrain, landscape);
   const startY = CEILING_Y + 200;
   return {
     seed,
@@ -157,6 +161,7 @@ export function createGameState(seed: number): GameState {
     phaseTimer: 0,
     baseX: BASE_X,
     terrain,
+    landscape,
     player: {
       x: BASE_X,
       y: startY,

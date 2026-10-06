@@ -60,9 +60,11 @@ function drawScanner(ctx: CanvasRenderingContext2D, s: GameState, camX: number):
   }
   ctx.stroke();
 
-  // Base
+  // Base: a white cross
   const b = scannerPos(s.baseX, VIEW_H - 40, camX);
-  blip(ctx, b, PALETTE.base, 6);
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(b.x - 4, b.y - 1, 8, 2);
+  ctx.fillRect(b.x - 1, b.y - 4, 2, 8);
 
   for (const m of s.men) {
     if (m.state === 'saved' || m.state === 'dead') continue;
