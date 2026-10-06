@@ -7,6 +7,16 @@ import {
   PLANTER_CRUISE_MIN, PLANTER_CRUISE_MAX, STORM_BAND_TOP, STORM_BAND_BOTTOM, NMEYE_BOMB_INTERVAL, ANTIMATTER_ORBIT_RADIUS,
 } from '../../../src/game/constants';
 
+describe('nmeye speed', () => {
+  it('is fixed at 760 regardless of the wave speed scale', () => {
+    const s = createGameState(1);
+    expect(createEnemy(s, 'nmeye', 100, 200).speed).toBe(760);
+    s.speedScale = 2.3;
+    expect(createEnemy(s, 'nmeye', 100, 200).speed).toBe(760);
+    expect(createEnemy(s, 'trailer', 100, 200).speed).toBeCloseTo(ENEMY_STATS.trailer.speed * 2.3);
+  });
+});
+
 describe('enemies', () => {
   it('createEnemy applies stats and the wave speed scale', () => {
     const s = createGameState(1);

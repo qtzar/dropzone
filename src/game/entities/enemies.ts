@@ -43,6 +43,8 @@ export function resetFireTimer(s: GameState, e: Enemy): void {
 }
 
 function speedFor(s: GameState, kind: EnemyKind): number {
+  // The Nmeye is always faster than the player (spec: 760) and ignores the wave speed scale.
+  if (kind === 'nmeye') return ENEMY_STATS.nmeye.speed;
   return ENEMY_STATS[kind].speed * s.speedScale;
 }
 

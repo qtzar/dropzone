@@ -81,6 +81,8 @@ export const ENEMY_SHOT_LIFE = 3;
 /** The first Nmeye appears this many seconds into a wave, then one every NMEYE_REPEAT seconds. */
 export const NMEYE_DELAY = 60;
 export const NMEYE_REPEAT = 20;
+/** At most this many Nmeyes live at once; further spawns are skipped. */
+export const NMEYE_MAX_ALIVE = 2;
 /** Enemies only shoot when within this horizontal distance of the player. */
 export const ENEMY_FIRE_RANGE = 800;
 

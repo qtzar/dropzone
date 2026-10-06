@@ -157,6 +157,27 @@ describe('nmeye timer', () => {
   });
 });
 
+describe('nmeye cap', () => {
+  it('skips the spawn while two Nmeyes live, but keeps the timer running', () => {
+    const s = createGameState(1);
+    startWave(s, 1);
+    addEnemy(s, 'nmeye', 100, 200);
+    addEnemy(s, 'nmeye', 200, 200);
+    updateWaveTimers(s, NMEYE_DELAY + 0.01);
+    expect(count(s, 'nmeye')).toBe(2);
+    expect(s.nextNmeyeAt).toBe(NMEYE_DELAY + NMEYE_REPEAT);
+  });
+
+  it('does not count dead Nmeyes and spawns when only one lives', () => {
+    const s = createGameState(1);
+    startWave(s, 1);
+    addEnemy(s, 'nmeye', 100, 200);
+    addEnemy(s, 'nmeye', 200, 200).dead = true;
+    updateWaveTimers(s, NMEYE_DELAY + 0.01);
+    expect(s.enemies.filter((e) => e.kind === 'nmeye' && !e.dead)).toHaveLength(2);
+  });
+});
+
 describe('wave clear', () => {
   it('does nothing while enemies remain', () => {
     const s = createGameState(1);

@@ -10,7 +10,7 @@ import { spawnMen } from './rescue';
 import { addScore } from './scoring';
 import { clearHazards } from './hazards';
 import {
-  CEILING_Y, NMEYE_DELAY, NMEYE_REPEAT, MEN_PER_WAVE, SHIELD_PER_WAVE,
+  CEILING_Y, NMEYE_DELAY, NMEYE_REPEAT, NMEYE_MAX_ALIVE, MEN_PER_WAVE, SHIELD_PER_WAVE,
   SPAWN_SAFE_DISTANCE, WAVE_COMPLETE_TIME, WAVE_BONUS_PER_MAN, WAVE_BONUS_CAP,
 } from '../constants';
 
@@ -71,11 +71,12 @@ export function startWave(s: GameState, wave: number): void {
 export function updateWaveTimers(s: GameState, dt: number): void {
   s.waveTime += dt;
   while (s.waveTime >= s.nextNmeyeAt) {
+    s.nextNmeyeAt += NMEYE_REPEAT;
+    if (s.enemies.filter((e) => e.kind === 'nmeye' && !e.dead).length >= NMEYE_MAX_ALIVE) continue;
     const side = chance(s.rng, 0.5) ? 1 : -1;
     const x = wrapX(s.player.x + side * VIEW_W * 0.7);
     const y = range(s.rng, SPAWN_MIN_Y, 400);
     s.enemies.push(createEnemy(s, 'nmeye', x, y));
-    s.nextNmeyeAt += NMEYE_REPEAT;
     emit(s, { type: 'nmeyeSpawned', x, y });
   }
 }
