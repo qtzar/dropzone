@@ -125,3 +125,19 @@ The deterministic simulation test must reach wave 6 in an automated run: clear e
 
 ## Out of scope
 The original's exact pixel art, sound samples and wave layouts (we have no data on them), the "any key cloak" control, and the joystick-only control scheme.
+
+## Addendum (2026-10-06, from play-testing)
+
+### A1. Men cross obstacles instead of getting stuck
+Simulation showed men with a lava ditch or the lake between them and the base turn back forever, so an idle wave could never end. New rule:
+- A man heading for the base who reaches a lake/lava edge turns back for 1–2 s as before and counts a turn-back.
+- Once he has turned back `MAN_CROSS_AFTER = 2` times, the next time he reaches an edge while heading for the base he **crosses**: over a lava ditch he **hops** (moves at 90 px/s, lifted 16 px above the ditch floor, never dies); through the lake he **wades** (0.6 × walking speed, at the surface). On reaching normal ground he resets his turn-back count.
+- Being picked up or dropped mid-crossing is safe: crossing ends as soon as he is on normal ground. A man who *falls* into lava still dies.
+
+### A2. Men tracker (HUD)
+A row of small stick-man icons to the right of the score (x 132–220, y ≈ 27–41), one per man in the current wave, **in spawn order, no blinking**:
+- **Blue `#3d8bff`**: on the planet (walking or carried).
+- **Yellow `#ffd23d`**: in danger (chased by an Android, or falling).
+- **Green `#4dff88`**: safe (delivered or self-rescued).
+- **Red `#ff3b3b`**: dead.
+- With no men in the wave (invasion waves, after the planet went unstable): dim `NO MEN` text instead.
