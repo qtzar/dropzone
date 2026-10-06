@@ -10,7 +10,7 @@ import { addMan, addEnemy } from './helpers';
 describe('update', () => {
   it('advances time and moves the player', () => {
     const s = createGameState(1);
-    addEnemy(s, 'orb', 6000, 300); // keep the wave from clearing
+    addEnemy(s, 'spore', 6000, 300); // keep the wave from clearing
     const x = s.player.x;
     update(s, { ...NO_ACTIONS, moveX: 1 }, SIM_DT);
     expect(s.time).toBeCloseTo(SIM_DT);
@@ -46,8 +46,8 @@ describe('update', () => {
 
   it('shooting an enemy in front of the player kills it through the full pipeline', () => {
     const s = createGameState(1);
-    addEnemy(s, 'orb', 6000, 300); // keep the wave from clearing
-    const target = addEnemy(s, 'snatcher', s.player.x + 250, s.player.y);
+    addEnemy(s, 'spore', 6000, 300); // keep the wave from clearing
+    const target = addEnemy(s, 'nemesite', s.player.x + 250, s.player.y);
     target.fireTimer = Infinity;
     target.speed = 0;
     for (let i = 0; i < 30; i++) update(s, { ...NO_ACTIONS, fire: true }, SIM_DT);
@@ -58,7 +58,7 @@ describe('update', () => {
   it('delivering a man through update scores the rescue', () => {
     const s = createGameState(1);
     s.wave = 2;
-    addEnemy(s, 'orb', 6000, 300);
+    addEnemy(s, 'spore', 6000, 300);
     const m = addMan(s, s.baseX, 'carried');
     s.player.carryingId = m.id;
     s.player.y = BASE_GROUND_Y - PLAYER_RADIUS;
@@ -82,7 +82,7 @@ describe('update', () => {
 describe('update hazards', () => {
   it('moves hazards and lets them kill the player', () => {
     const s = createGameState(1);
-    addEnemy(s, 'orb', 6000, 300);
+    addEnemy(s, 'spore', 6000, 300);
     s.acid.push({ x: s.player.x, y: s.player.y - 30, vy: 220 });
     for (let i = 0; i < 30 && s.player.alive; i++) update(s, NO_ACTIONS, SIM_DT);
     expect(s.player.alive).toBe(false);
@@ -93,7 +93,7 @@ describe('update hazards', () => {
 describe('update volcanoes', () => {
   it('volcanoes erupt during play', () => {
     const s = createGameState(1);
-    addEnemy(s, 'orb', 6000, 300);
+    addEnemy(s, 'spore', 6000, 300);
     s.player.invuln = 999;
     for (let t = 0; t < 4.1; t += SIM_DT) update(s, NO_ACTIONS, SIM_DT);
     expect(s.events.some((e) => e.type === 'volcanoErupt')).toBe(true);

@@ -12,7 +12,6 @@ describe('createGameState', () => {
     expect(s.nextExtraLife).toBe(EXTRA_LIFE_EVERY);
     expect(s.score).toBe(0);
     expect(s.multiplier).toBe(1);
-    expect(s.menRemaining).toBe(MEN_PER_WAVE);
     expect(s.phase).toBe('playing');
     expect(s.enemies).toEqual([]);
     expect(s.men).toEqual([]);

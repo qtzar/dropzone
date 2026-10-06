@@ -9,7 +9,7 @@ import { convertEnemy, startOrbit } from '../entities/enemies';
 import { circlesOverlap } from './collision';
 import { awardBonus } from './scoring';
 import {
-  MAN_RADIUS, MAN_WALK_SPEED, MAN_FALL_GRAVITY, MAN_SAFE_FALL, MAN_CARRY_OFFSET, SNATCH_CARRY_OFFSET,
+  MAN_RADIUS, MAN_WALK_SPEED, MAN_FALL_GRAVITY, MAN_SAFE_FALL, MAN_CARRY_OFFSET,
   PLAYER_RADIUS, RESCUE_POINTS_PER_WAVE, RESCUE_POINTS_CAP, CATCH_POINTS, BASE_WIDTH, BASE_DELIVERY_HEIGHT,
   MAN_TURN_MIN, MAN_TURN_MAX,
 } from '../constants';
@@ -126,16 +126,6 @@ function updateCarried(s: GameState, m: Man): void {
   }
 }
 
-function updateSnatched(s: GameState, m: Man): void {
-  const holder = m.holderId !== null ? findEnemy(s, m.holderId) : undefined;
-  if (!holder) {
-    startFalling(m);
-    return;
-  }
-  m.x = holder.x;
-  m.y = holder.y + SNATCH_CARRY_OFFSET;
-}
-
 function updateFalling(s: GameState, m: Man, dt: number): void {
   const p = s.player;
   m.vy += MAN_FALL_GRAVITY * dt;
@@ -193,9 +183,6 @@ export function updateMen(s: GameState, dt: number): void {
       case 'carried':
         updateCarried(s, m);
         break;
-      case 'snatched':
-        updateSnatched(s, m);
-        break;
       case 'falling':
         updateFalling(s, m, dt);
         break;
@@ -211,7 +198,6 @@ export function checkUnstable(s: GameState): void {
   if (s.unstable || s.men.length === 0) return;
   if (!s.men.every((m) => m.state === 'dead')) return;
   s.unstable = true;
-  s.menRemaining = 0;
   for (const e of s.enemies) {
     if (e.dead || (e.kind !== 'planter' && e.kind !== 'android')) continue;
     convertEnemy(s, e, 'antimatter');

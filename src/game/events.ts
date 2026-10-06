@@ -11,7 +11,6 @@ export type GameEvent =
   | { type: 'manCaught'; x: number; y: number }
   | { type: 'manRescued'; x: number; y: number }
   | { type: 'manDied'; x: number; y: number }
-  | { type: 'manSnatched'; x: number; y: number }
   | { type: 'playerDied'; x: number; y: number }
   | { type: 'playerRespawned'; x: number; y: number }
   | { type: 'bombDetonated'; x: number; y: number }
@@ -19,7 +18,6 @@ export type GameEvent =
   | { type: 'cloakOff' }
   | { type: 'waveStarted'; wave: number }
   | { type: 'waveCleared'; wave: number; bonus: number; saved: number }
-  | { type: 'hunterSpawned'; x: number; y: number }
   | { type: 'extraLife' }
   | { type: 'manWhistle'; x: number; y: number }
   | { type: 'manSelfRescued'; x: number; y: number }

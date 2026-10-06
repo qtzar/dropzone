@@ -50,7 +50,7 @@ export function drawTitle(ctx: CanvasRenderingContext2D, scores: readonly ScoreE
   glowText(ctx, 'DROPZONE', VIEW_W / 2, 200, 96, PALETTE.player);
   glowText(ctx, 'RESCUE THE MEN  -  DESTROY THE ALIENS', VIEW_W / 2, 245, 18, PALETTE.hud);
   if (Math.floor(time * 2) % 2 === 0) {
-    glowText(ctx, 'PRESS ENTER / SPACE / START', VIEW_W / 2, 310, 22, PALETTE.hunter);
+    glowText(ctx, 'PRESS ENTER / SPACE / START', VIEW_W / 2, 310, 22, PALETTE.gold);
   }
 
   glowText(ctx, 'HIGH SCORES', VIEW_W / 2, 370, 20, PALETTE.man);
@@ -98,7 +98,7 @@ export function drawGameOver(ctx: CanvasRenderingContext2D, score: number, wave:
 
 export function drawInitials(ctx: CanvasRenderingContext2D, letters: string[], cursor: number, score: number, time: number): void {
   dim(ctx, 0.7);
-  glowText(ctx, 'NEW HIGH SCORE', VIEW_W / 2, 220, 56, PALETTE.hunter);
+  glowText(ctx, 'NEW HIGH SCORE', VIEW_W / 2, 220, 56, PALETTE.gold);
   glowText(ctx, String(score), VIEW_W / 2, 280, 32, PALETTE.text);
   letters.forEach((ch, i) => {
     const x = VIEW_W / 2 + (i - 1) * 80;

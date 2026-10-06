@@ -1,75 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import { createGameState } from '../../../../src/game/state';
-import { updateEnemies, updateShots, updateTrails } from '../../../../src/game/systems/ai';
-import { SIM_DT, CEILING_Y, SNATCH_CARRY_OFFSET, TRAIL_LIFE, SNATCH_GRACE } from '../../../../src/game/constants';
+import { updateEnemies, updateShots } from '../../../../src/game/systems/ai';
+import { SIM_DT, CEILING_Y } from '../../../../src/game/constants';
 import { WORLD_W } from '../../../../src/core/world';
-import { addMan, addEnemy } from '../../helpers';
+import { addEnemy } from '../../helpers';
 
 function tick(s: ReturnType<typeof createGameState>, seconds: number) {
   for (let t = 0; t < seconds; t += SIM_DT) updateEnemies(s, SIM_DT);
 }
-
-describe('snatcher', () => {
-  it('seeks and grabs a walking man', () => {
-    const s = createGameState(1);
-    s.waveTime = SNATCH_GRACE;
-    const m = addMan(s, 3000);
-    const e = addEnemy(s, 'snatcher', 3040, m.y - SNATCH_CARRY_OFFSET - 60);
-    e.fireTimer = Infinity;
-    tick(s, 3);
-    expect(m.state).toBe('snatched');
-    expect(m.holderId).toBe(e.id);
-    expect(e.carryingId).toBe(m.id);
-    expect(s.events.some((ev) => ev.type === 'manSnatched')).toBe(true);
-  });
-
-  it('does not target a man during the grace period', () => {
-    const s = createGameState(1);
-    s.waveTime = 0;
-    const m = addMan(s, 3000);
-    const e = addEnemy(s, 'snatcher', 3040, m.y - SNATCH_CARRY_OFFSET - 60);
-    e.fireTimer = Infinity;
-    tick(s, 3);
-    expect(m.state).toBe('walking');
-    expect(e.targetId).toBeNull();
-  });
-
-  it('caps concurrent abductors at 1 + wave', () => {
-    const s = createGameState(1);
-    s.wave = 1;
-    s.waveTime = SNATCH_GRACE;
-    const sn = [3000, 4000, 5000].map((x) => {
-      const m = addMan(s, x);
-      const e = addEnemy(s, 'snatcher', x + 20, m.y - SNATCH_CARRY_OFFSET - 60);
-      e.fireTimer = Infinity;
-      return e;
-    });
-    tick(s, 0.5);
-    const busy = sn.filter((e) => e.targetId !== null || e.carryingId !== null);
-    expect(busy).toHaveLength(2);
-  });
-
-  it('kills the man and becomes a nemesite on reaching the top', () => {
-    const s = createGameState(1);
-    const m = addMan(s, 3000, 'snatched');
-    const e = addEnemy(s, 'snatcher', 3000, CEILING_Y + 30);
-    e.fireTimer = Infinity;
-    m.holderId = e.id;
-    e.carryingId = m.id;
-    tick(s, 2);
-    expect(m.state).toBe('dead');
-    expect(e.kind).toBe('nemesite');
-    expect(s.events.some((ev) => ev.type === 'manDied')).toBe(true);
-  });
-
-  it('wanders when no men are available', () => {
-    const s = createGameState(1);
-    const e = addEnemy(s, 'snatcher', 3000, 300);
-    tick(s, 1);
-    expect(e.targetId).toBeNull();
-    expect(Number.isFinite(e.x)).toBe(true);
-  });
-});
 
 describe('homing enemies', () => {
   it('nemesite homes toward the player across the seam', () => {
@@ -113,25 +51,25 @@ describe('enemy fire', () => {
   });
 });
 
-describe('drifters and trailers', () => {
-  it('orb bounces off the ceiling', () => {
+describe('integration', () => {
+  it('a spore bounces off the ceiling', () => {
     const s = createGameState(1);
-    const e = addEnemy(s, 'orb', 3000, CEILING_Y + 1);
+    const e = addEnemy(s, 'spore', 3000, CEILING_Y + 1);
     e.vy = -200;
     tick(s, 0.1);
     expect(e.vy).toBeGreaterThan(0);
   });
 
-  it('trailer no longer leaves trail segments', () => {
+  it('skips dead enemies', () => {
     const s = createGameState(1);
-    const e = addEnemy(s, 'trailer', 3000, 300);
-    e.fireTimer = Infinity;
+    const e = addEnemy(s, 'spore', 3000, 300);
+    e.dead = true;
     tick(s, 0.5);
-    expect(s.trails).toHaveLength(0);
+    expect(e.x).toBe(3000);
   });
 });
 
-describe('updateShots / updateTrails', () => {
+describe('updateShots', () => {
   it('moves shots and removes expired ones', () => {
     const s = createGameState(1);
     s.shots.push({ x: 1000, y: 300, vx: 100, vy: 0, life: 0.05 });
@@ -146,12 +84,5 @@ describe('updateShots / updateTrails', () => {
     s.shots.push({ x: 1000, y: 700, vx: 0, vy: 100, life: 2 });
     updateShots(s, 0.01);
     expect(s.shots).toHaveLength(0);
-  });
-
-  it('decays and removes trail segments', () => {
-    const s = createGameState(1);
-    s.trails.push({ x: 0, y: 300, life: TRAIL_LIFE });
-    updateTrails(s, TRAIL_LIFE + 0.01);
-    expect(s.trails).toHaveLength(0);
   });
 });

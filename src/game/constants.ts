@@ -45,7 +45,6 @@ export const MAN_SAFE_FALL = 200;
 export const MAN_TURN_MIN = 1;
 export const MAN_TURN_MAX = 2;
 export const MAN_CARRY_OFFSET = 26;
-export const SNATCH_CARRY_OFFSET = 20;
 /** Carried delivery scores 100 x wave, capped at 500. */
 export const RESCUE_POINTS_PER_WAVE = 100;
 export const RESCUE_POINTS_CAP = 500;
@@ -64,9 +63,6 @@ export const MAX_MULTIPLIER = 8;
 // Enemies
 export const ENEMY_SHOT_SPEED = 380;
 export const ENEMY_SHOT_LIFE = 3;
-export const TRAIL_LIFE = 1.5;
-export const TRAIL_INTERVAL = 0.05;
-export const TRAIL_RADIUS = 6;
 /** The first Nmeye appears this many seconds into a wave, then one every NMEYE_REPEAT seconds. */
 export const NMEYE_DELAY = 60;
 export const NMEYE_REPEAT = 20;
@@ -137,7 +133,6 @@ export const EYE_BOMB_SPEED = 180;
 export const EYE_BOMB_RADIUS = 5;
 
 // Waves
-export const MILESTONE_EVERY = 5;
 /** Every 5th wave is a Trailer invasion; the wave after each one (from wave 6) is a shipment. */
 export const INVASION_EVERY = 5;
 export const INVASION_BASE_TRAILERS = 6;
@@ -146,11 +141,9 @@ export const INVASION_SPORES = 2;
 export const LAST_WAVE = 99;
 export const CYCLE_START = 95;
 export const WAVE_COMPLETE_TIME = 3;
-/** Seconds into a wave before any snatcher may target a man. */
-export const SNATCH_GRACE = 8;
 /** Minimum horizontal distance from the player when spawning wave enemies. */
 export const SPAWN_SAFE_DISTANCE = 700;
 
 // Hit-stop durations (seconds)
 export const HITSTOP_MULTI = 0.03;
-export const HITSTOP_HUNTER = 0.04;
+export const HITSTOP_NMEYE = 0.04;

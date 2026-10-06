@@ -59,7 +59,6 @@ export function createEventAudio(sfx: SfxPlayer, now: () => number): (events: re
         case 'waveCleared':
           sfx.waveClear();
           break;
-        case 'hunterSpawned':
         case 'nmeyeSpawned':
           sfx.hunter();
           break;

@@ -142,7 +142,7 @@ export class Effects implements FxLayer {
             e.x,
             e.y - 14,
             e.multiplier > 1 ? `+${e.points} x${e.multiplier}` : `+${e.points}`,
-            e.multiplier > 1 ? PALETTE.hunter : PALETTE.text,
+            e.multiplier > 1 ? PALETTE.gold : PALETTE.text,
           );
           break;
         case 'manRescued':
@@ -155,9 +155,6 @@ export class Effects implements FxLayer {
           break;
         case 'manDied':
           this.popup(e.x, e.y - 20, 'MAN LOST', PALETTE.warn);
-          break;
-        case 'manSnatched':
-          this.ring(e.x, e.y, 30, PALETTE.snatcher, 0.3);
           break;
         case 'extraLife':
           this.popup(s.player.x, s.player.y - 40, 'EXTRA LIFE', PALETTE.player);
@@ -174,9 +171,6 @@ export class Effects implements FxLayer {
           }
           break;
         }
-        case 'hunterSpawned':
-          this.ring(e.x, e.y, 90, PALETTE.hunter, 0.5);
-          break;
         case 'laserBlocked':
           this.burst(e.x, e.y, PALETTE.laser, 8, 160);
           break;

@@ -1,102 +1,14 @@
 import { wrapX, shortestDx } from '../../../core/world';
-import type { GameState, Enemy, Man } from '../../state';
+import type { GameState, Enemy } from '../../state';
 import { emit } from '../../events';
 import { groundYAt } from '../../terrain';
-import { findMan } from '../../query';
-import { convertEnemy, resetFireTimer } from '../../entities/enemies';
-import {
-  CEILING_Y, SNATCH_CARRY_OFFSET, SNATCH_GRACE,
-  ENEMY_SHOT_SPEED, ENEMY_SHOT_LIFE, ENEMY_FIRE_RANGE,
-} from '../../constants';
-import { playerVisible, homeOnPlayer } from './common';
+import { resetFireTimer } from '../../entities/enemies';
+import { CEILING_Y, ENEMY_SHOT_SPEED, ENEMY_SHOT_LIFE, ENEMY_FIRE_RANGE } from '../../constants';
+import { playerVisible } from './common';
 import { updatePlanter, updateAndroid } from './planter';
 import { updateNemesite, updateNmeye, updateAntimatter } from './homers';
 import { updateTrailer } from './spawners';
 import { updateBlunderstorm } from './storm';
-
-const SNATCHER_SEEK_RANGE = 2500;
-const GRAB_DISTANCE = 10;
-
-/** Grace period over, abductor cap not reached, and at least one man is walking. */
-function canPickTarget(s: GameState, e: Enemy): boolean {
-  if (s.waveTime < SNATCH_GRACE) return false;
-  let walking = false;
-  for (const m of s.men) {
-    if (m.state === 'walking') {
-      walking = true;
-      break;
-    }
-  }
-  if (!walking) return false;
-  let abductors = 0;
-  for (const o of s.enemies) {
-    if (o !== e && !o.dead && (o.targetId !== null || o.carryingId !== null)) abductors++;
-  }
-  return abductors < 1 + s.wave;
-}
-
-function pickTarget(s: GameState, e: Enemy): Man | undefined {
-  const claimed = new Set<number>();
-  for (const o of s.enemies) if (o !== e && !o.dead && o.targetId !== null) claimed.add(o.targetId);
-  let best: Man | undefined;
-  let bestD = SNATCHER_SEEK_RANGE;
-  for (const m of s.men) {
-    if (m.state !== 'walking' || claimed.has(m.id)) continue;
-    const d = Math.abs(shortestDx(e.x, m.x));
-    if (d < bestD) {
-      bestD = d;
-      best = m;
-    }
-  }
-  return best;
-}
-
-function updateSnatcher(s: GameState, e: Enemy): void {
-  if (e.carryingId !== null) {
-    const man = findMan(s, e.carryingId);
-    if (!man || man.state !== 'snatched') {
-      e.carryingId = null;
-      return;
-    }
-    if (e.y <= CEILING_Y + 1) {
-      man.state = 'dead';
-      man.holderId = null;
-      emit(s, { type: 'manDied', x: man.x, y: man.y });
-      convertEnemy(s, e, 'nemesite');
-      return;
-    }
-    e.vx = 0;
-    e.vy = -e.speed * 0.8;
-    return;
-  }
-
-  let target = e.targetId !== null ? findMan(s, e.targetId) : undefined;
-  if (!target || target.state !== 'walking') {
-    target = canPickTarget(s, e) ? pickTarget(s, e) : undefined;
-    e.targetId = target ? target.id : null;
-  }
-  if (!target) {
-    e.vx = Math.cos(e.phase * 0.7) * e.speed;
-    e.vy = (e.homeY - e.y) * 0.5 + Math.sin(e.phase * 1.3) * e.speed * 0.3;
-    return;
-  }
-
-  const dx = shortestDx(e.x, target.x);
-  const dy = target.y - SNATCH_CARRY_OFFSET - e.y;
-  const dist = Math.hypot(dx, dy);
-  if (dist < GRAB_DISTANCE) {
-    target.state = 'snatched';
-    target.holderId = e.id;
-    e.carryingId = target.id;
-    e.targetId = null;
-    e.vx = 0;
-    e.vy = 0;
-    emit(s, { type: 'manSnatched', x: target.x, y: target.y });
-    return;
-  }
-  e.vx = (dx / dist) * e.speed;
-  e.vy = (dy / dist) * e.speed;
-}
 
 function integrate(s: GameState, e: Enemy, dt: number): void {
   e.x = wrapX(e.x + e.vx * dt);
@@ -140,16 +52,26 @@ function updateEnemyFire(s: GameState, e: Enemy, dt: number): void {
   fireAtPlayer(s, e);
 }
 
+/** Runs each living enemy's behaviour, then moves it and lets it shoot. */
 export function updateEnemies(s: GameState, dt: number): void {
   for (const e of s.enemies) {
     if (e.dead) continue;
     e.phase += dt;
     switch (e.kind) {
-      case 'snatcher':
-        updateSnatcher(s, e);
+      case 'planter':
+        updatePlanter(s, e, dt);
+        break;
+      case 'android':
+        updateAndroid(s, e, dt);
         break;
       case 'nemesite':
         updateNemesite(s, e, dt);
+        break;
+      case 'trailer':
+        updateTrailer(s, e, dt);
+        break;
+      case 'blunderstorm':
+        updateBlunderstorm(s, e, dt);
         break;
       case 'nmeye':
         updateNmeye(s, e, dt);
@@ -157,23 +79,6 @@ export function updateEnemies(s: GameState, dt: number): void {
       case 'antimatter':
         updateAntimatter(s, e, dt);
         break;
-      case 'hunter':
-        homeOnPlayer(s, e, dt, 4);
-        break;
-      case 'trailer':
-        updateTrailer(s, e, dt);
-        break;
-      case 'planter':
-        updatePlanter(s, e, dt);
-        break;
-      case 'android':
-        updateAndroid(s, e, dt);
-        break;
-      case 'blunderstorm':
-        updateBlunderstorm(s, e, dt);
-        break;
-      case 'orb':
-      case 'fragment':
       case 'spore':
         break;
     }
@@ -190,9 +95,4 @@ export function updateShots(s: GameState, dt: number): void {
     if (sh.y < CEILING_Y || sh.y > groundYAt(s.terrain, sh.x)) sh.life = 0;
   }
   s.shots = s.shots.filter((sh) => sh.life > 0);
-}
-
-export function updateTrails(s: GameState, dt: number): void {
-  for (const t of s.trails) t.life -= dt;
-  s.trails = s.trails.filter((t) => t.life > 0);
 }

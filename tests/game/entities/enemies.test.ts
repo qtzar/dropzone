@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { createGameState } from '../../../src/game/state';
 import {
-  ENEMY_STATS, createEnemy, fireInterval, convertEnemy, makeAggressive, AGGRESSIVE_SPEED_MULT,
+  ENEMY_STATS, createEnemy, fireInterval, convertEnemy,
 } from '../../../src/game/entities/enemies';
 import {
   PLANTER_CRUISE_MIN, PLANTER_CRUISE_MAX, STORM_BAND_TOP, STORM_BAND_BOTTOM, NMEYE_BOMB_INTERVAL, ANTIMATTER_ORBIT_RADIUS,
@@ -19,42 +19,33 @@ describe('enemies', () => {
     expect(s.enemies).toHaveLength(0);
   });
 
-  it('orbs and fragments never fire', () => {
+  it('spores and androids never fire', () => {
     const s = createGameState(1);
-    expect(createEnemy(s, 'orb', 0, 200).fireTimer).toBe(Infinity);
-    expect(fireInterval(s, createEnemy(s, 'fragment', 0, 200))).toBe(Infinity);
+    expect(createEnemy(s, 'spore', 0, 200).fireTimer).toBe(Infinity);
+    expect(fireInterval(s, createEnemy(s, 'android', 0, 200))).toBe(Infinity);
   });
 
-  it('orbs and trailers start moving', () => {
+  it('spores and trailers start moving', () => {
     const s = createGameState(1);
-    const orb = createEnemy(s, 'orb', 0, 200);
-    expect(Math.hypot(orb.vx, orb.vy)).toBeGreaterThan(0);
+    const spore = createEnemy(s, 'spore', 0, 200);
+    expect(Math.hypot(spore.vx, spore.vy)).toBeGreaterThan(0);
     expect(Math.abs(createEnemy(s, 'trailer', 0, 200).vx)).toBeGreaterThan(0);
   });
 
-  it('convertEnemy changes kind and stats and clears snatcher state', () => {
+  it('convertEnemy changes kind and stats and clears the target', () => {
     const s = createGameState(1);
-    const e = createEnemy(s, 'snatcher', 0, 200);
-    e.carryingId = 5;
+    const e = createEnemy(s, 'android', 0, 200);
     e.targetId = 6;
-    convertEnemy(s, e, 'nemesite');
-    expect(e.kind).toBe('nemesite');
-    expect(e.radius).toBe(ENEMY_STATS.nemesite.radius);
-    expect(e.carryingId).toBeNull();
+    convertEnemy(s, e, 'antimatter');
+    expect(e.kind).toBe('antimatter');
+    expect(e.radius).toBe(ENEMY_STATS.antimatter.radius);
     expect(e.targetId).toBeNull();
   });
 
-  it('makeAggressive turns non-hunters into fast nemesites', () => {
-    const s = createGameState(1);
-    const e = createEnemy(s, 'orb', 0, 200);
-    makeAggressive(s, e);
-    expect(e.kind).toBe('nemesite');
-    expect(e.aggressive).toBe(true);
-    expect(e.speed).toBeCloseTo(ENEMY_STATS.nemesite.speed * AGGRESSIVE_SPEED_MULT);
-    const h = createEnemy(s, 'hunter', 0, 200);
-    makeAggressive(s, h);
-    expect(h.kind).toBe('hunter');
-    expect(h.speed).toBeCloseTo(ENEMY_STATS.hunter.speed * AGGRESSIVE_SPEED_MULT);
+  it('only the eight original kinds exist', () => {
+    expect(Object.keys(ENEMY_STATS).sort()).toEqual(
+      ['android', 'antimatter', 'blunderstorm', 'nemesite', 'nmeye', 'planter', 'spore', 'trailer'],
+    );
   });
 });
 

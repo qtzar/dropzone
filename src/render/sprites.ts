@@ -101,14 +101,6 @@ export function createSprites(): Record<SpriteKey, Sprite> {
       line(c, 0, 4, 3, 10);
       c.stroke();
     }),
-    snatcher: makeSprite(15, PALETTE.snatcher, (c) => {
-      c.beginPath();
-      poly(c, [[0, -12], [12, 0], [0, 12], [-12, 0]]);
-      circle(c, 0, 0, 3);
-      line(c, -6, 8, -9, 15);
-      line(c, 6, 8, 9, 15);
-      c.stroke();
-    }),
     nemesite: makeSprite(14, PALETTE.nemesite, (c) => {
       c.beginPath();
       const pts: Array<[number, number]> = [];
@@ -126,26 +118,6 @@ export function createSprites(): Record<SpriteKey, Sprite> {
       poly(c, [[-12, -9], [13, 0], [-12, 9], [-6, 0]]);
       line(c, -2, -3, 6, 0);
       line(c, -2, 3, 6, 0);
-      c.stroke();
-    }),
-    orb: makeSprite(16, PALETTE.orb, (c) => {
-      c.beginPath();
-      circle(c, 0, 0, 14);
-      circle(c, 0, 0, 6);
-      line(c, -14, 0, 14, 0);
-      line(c, 0, -14, 0, 14);
-      c.stroke();
-    }),
-    fragment: makeSprite(8, PALETTE.fragment, (c) => {
-      c.beginPath();
-      poly(c, [[0, -7], [6, 5], [-6, 5]]);
-      c.stroke();
-    }),
-    hunter: makeSprite(16, PALETTE.hunter, (c) => {
-      c.beginPath();
-      poly(c, [[0, -15], [16, 0], [0, 15], [-16, 0]]);
-      poly(c, [[0, -7], [8, 0], [0, 7], [-8, 0]]);
-      line(c, -20, 0, 20, 0);
       c.stroke();
     }),
     planter: makeSprite(16, PALETTE.planter, (c) => {

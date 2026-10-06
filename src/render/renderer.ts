@@ -1,6 +1,6 @@
 import { VIEW_W, toScreenX, lerpWrapped } from '../core/world';
 import type { GameState } from '../game/state';
-import { TRAIL_LIFE, TRAIL_RADIUS, ACID_RADIUS, BOLT_WIDTH, EYE_BOMB_RADIUS } from '../game/constants';
+import { ACID_RADIUS, BOLT_WIDTH, EYE_BOMB_RADIUS } from '../game/constants';
 import type { View } from './canvas';
 import type { Camera } from './camera';
 import { Background } from './background';
@@ -47,7 +47,6 @@ export class CanvasRenderer implements Renderer {
     this.bg.drawLandscape(ctx, s.landscape, s.terrain, cam.x, s.time, s.unstable);
     this.bg.drawBase(ctx, s.baseX, cam.x, s.time);
 
-    this.drawTrails(ctx, s, cam.x);
     this.drawMen(ctx, s, cam.x);
     this.drawEnemies(ctx, s, cam.x);
     this.drawPlayer(ctx, s, cam.x, alpha);
@@ -179,21 +178,6 @@ export class CanvasRenderer implements Renderer {
       ctx.globalAlpha = 1;
       ctx.beginPath();
       ctx.arc(sx, sh.y, 3, 0, Math.PI * 2);
-      ctx.fill();
-    }
-    ctx.globalAlpha = 1;
-    ctx.globalCompositeOperation = 'source-over';
-  }
-
-  private drawTrails(ctx: CanvasRenderingContext2D, s: GameState, camX: number): void {
-    ctx.globalCompositeOperation = 'lighter';
-    ctx.fillStyle = PALETTE.trailer;
-    for (const t of s.trails) {
-      const sx = toScreenX(t.x, camX);
-      if (!onScreen(sx, 20)) continue;
-      ctx.globalAlpha = Math.max(0, t.life / TRAIL_LIFE) * 0.8;
-      ctx.beginPath();
-      ctx.arc(sx, t.y, TRAIL_RADIUS, 0, Math.PI * 2);
       ctx.fill();
     }
     ctx.globalAlpha = 1;

@@ -19,7 +19,7 @@ describe('createEventAudio', () => {
     const { sfx, calls } = fakeSfx();
     const play = createEventAudio(sfx, () => 0);
     const events: GameEvent[] = [
-      { type: 'explosion', x: 0, y: 0, source: 'orb', big: true },
+      { type: 'explosion', x: 0, y: 0, source: 'spore', big: true },
       { type: 'manPickedUp', x: 0, y: 0 },
       { type: 'manCaught', x: 0, y: 0 },
       { type: 'manRescued', x: 0, y: 0 },
@@ -31,12 +31,11 @@ describe('createEventAudio', () => {
       { type: 'cloakOn' },
       { type: 'cloakOff' },
       { type: 'waveCleared', wave: 1, bonus: 0, saved: 0 },
-      { type: 'hunterSpawned', x: 0, y: 0 },
     ];
     play(events);
     expect(calls).toEqual([
       'explosion:true', 'pickup', 'caught', 'rescue', 'manLost', 'bomb', 'death',
-      'extraLife', 'klaxon', 'cloak:true', 'cloak:false', 'waveClear', 'hunter',
+      'extraLife', 'klaxon', 'cloak:true', 'cloak:false', 'waveClear',
     ]);
   });
 

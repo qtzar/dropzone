@@ -61,7 +61,7 @@ describe('trailer', () => {
     expect(e.vx).toBeLessThan(0);
   });
 
-  it('a non-homer weaves along its home line without leaving a trail', () => {
+  it('a non-homer weaves along its home line', () => {
     const s = createGameState(1);
     const e = addEnemy(s, 'trailer', 3000, 300);
     e.homer = false;
@@ -75,7 +75,6 @@ describe('trailer', () => {
     }
     expect(maxY - minY).toBeGreaterThan(100);
     expect(Math.abs(e.vx)).toBeCloseTo(e.speed);
-    expect(s.trails).toHaveLength(0);
   });
 });
 

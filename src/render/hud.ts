@@ -89,7 +89,7 @@ function drawLeftPanel(ctx: CanvasRenderingContext2D, s: GameState): void {
   ctx.font = 'bold 22px monospace';
   ctx.fillText(String(s.score).padStart(8, '0'), 16, 44);
   ctx.font = 'bold 16px monospace';
-  ctx.fillStyle = s.multiplier > 1 ? PALETTE.hunter : PALETTE.hud;
+  ctx.fillStyle = s.multiplier > 1 ? PALETTE.gold : PALETTE.hud;
   ctx.fillText(`x${s.multiplier}`, 16, 66);
   if (s.multiplier > 1) {
     ctx.fillRect(56, 60, 80 * clamp(s.comboTimer / COMBO_WINDOW, 0, 1), 4);
@@ -111,13 +111,13 @@ function drawRightPanel(ctx: CanvasRenderingContext2D, s: GameState): void {
     ctx.closePath();
     ctx.fill();
   }
-  ctx.strokeStyle = PALETTE.hunter;
+  ctx.strokeStyle = PALETTE.gold;
   ctx.lineWidth = 1.5;
   for (let i = 0; i < MAX_BOMBS; i++) {
     ctx.beginPath();
     ctx.arc(x0 + 110 + i * 18, 18, 6, 0, Math.PI * 2);
     if (i < s.bombs) {
-      ctx.fillStyle = PALETTE.hunter;
+      ctx.fillStyle = PALETTE.gold;
       ctx.fill();
     }
     ctx.stroke();
@@ -140,7 +140,7 @@ function drawCenterMessages(ctx: CanvasRenderingContext2D, s: GameState): void {
     ctx.font = '20px monospace';
     ctx.fillStyle = PALETTE.man;
     ctx.fillText(`MEN SAVED  ${s.savedThisWave}`, VIEW_W / 2, 350);
-    ctx.fillStyle = PALETTE.hunter;
+    ctx.fillStyle = PALETTE.gold;
     ctx.fillText(`BONUS  ${s.lastWaveBonus}`, VIEW_W / 2, 384);
   }
   ctx.textAlign = 'left';

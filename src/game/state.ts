@@ -29,7 +29,7 @@ export interface Player {
   carryingId: number | null;
 }
 
-export type ManState = 'walking' | 'carried' | 'snatched' | 'chased' | 'falling' | 'saved' | 'dead';
+export type ManState = 'walking' | 'carried' | 'chased' | 'falling' | 'saved' | 'dead';
 
 export interface Man {
   id: number;
@@ -39,14 +39,12 @@ export interface Man {
   dir: Facing;
   state: ManState;
   fallStartY: number;
-  /** Enemy id while snatched (holder) or chased (the Android chasing him). */
+  /** Enemy id of the Android chasing him while chased. */
   holderId: number | null;
   walkTimer: number;
 }
 
-export type EnemyKind =
-  | 'snatcher' | 'orb' | 'fragment' | 'hunter'
-  | 'planter' | 'android' | 'nemesite' | 'spore' | 'trailer' | 'blunderstorm' | 'nmeye' | 'antimatter';
+export type EnemyKind = 'planter' | 'android' | 'nemesite' | 'spore' | 'trailer' | 'blunderstorm' | 'nmeye' | 'antimatter';
 
 export interface Enemy {
   id: number;
@@ -60,14 +58,10 @@ export interface Enemy {
   fireTimer: number;
   /** Free-running phase for sine motion / animation. */
   phase: number;
-  /** Trailer: centre line of its weave. */
+  /** Trailer: centre line of its weave. Planter: cruise height. Blunderstorm: band height. */
   homeY: number;
-  /** Snatcher: man being hunted. */
+  /** Android: the man it is chasing. */
   targetId: number | null;
-  /** Snatcher: man being carried. */
-  carryingId: number | null;
-  aggressive: boolean;
-  trailTimer: number;
   /** Planter: id of the Android it is lowering. Android: id of the Planter lowering it. */
   linkedId: number | null;
   /** Planter: current tether length in px while lowering. */
@@ -109,12 +103,6 @@ export interface Shot {
   y: number;
   vx: number;
   vy: number;
-  life: number;
-}
-
-export interface TrailSeg {
-  x: number;
-  y: number;
   life: number;
 }
 
@@ -168,8 +156,6 @@ export interface GameState {
   comboTimer: number;
   hitStop: number;
   unstable: boolean;
-  /** Men to spawn at the start of the next wave. */
-  menRemaining: number;
   savedThisWave: number;
   lastWaveBonus: number;
   speedScale: number;
@@ -184,7 +170,6 @@ export interface GameState {
   enemies: Enemy[];
   lasers: Laser[];
   shots: Shot[];
-  trails: TrailSeg[];
   magma: Magma[];
   acid: Acid[];
   bolts: Bolt[];
@@ -220,7 +205,6 @@ export function createGameState(seed: number): GameState {
     comboTimer: 0,
     hitStop: 0,
     unstable: false,
-    menRemaining: MEN_PER_WAVE,
     savedThisWave: 0,
     lastWaveBonus: 0,
     speedScale: 1,
@@ -253,7 +237,6 @@ export function createGameState(seed: number): GameState {
     enemies: [],
     lasers: [],
     shots: [],
-    trails: [],
     magma: [],
     acid: [],
     bolts: [],

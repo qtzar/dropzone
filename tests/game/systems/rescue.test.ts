@@ -3,7 +3,7 @@ import { createGameState, type GameState } from '../../../src/game/state';
 import { spawnMen, updateMen, canDeliver, checkUnstable, rescuePoints } from '../../../src/game/systems/rescue';
 import { registerKill } from '../../../src/game/systems/scoring';
 import {
-  SIM_DT, MAN_CARRY_OFFSET, MAN_SAFE_FALL, MAN_RADIUS, CATCH_POINTS, PLAYER_RADIUS, SNATCH_CARRY_OFFSET,
+  SIM_DT, MAN_CARRY_OFFSET, MAN_SAFE_FALL, MAN_RADIUS, CATCH_POINTS, PLAYER_RADIUS,
   MAN_WALK_SPEED, BASE_WIDTH,
 } from '../../../src/game/constants';
 import { groundYAt, BASE_GROUND_Y } from '../../../src/game/terrain';
@@ -255,21 +255,6 @@ describe('falling', () => {
   });
 });
 
-describe('snatched', () => {
-  it('follows the holder and falls when the holder is gone', () => {
-    const s = createGameState(1);
-    const m = addMan(s, 3000, 'snatched');
-    const e = addEnemy(s, 'snatcher', 3050, 250);
-    m.holderId = e.id;
-    updateMen(s, SIM_DT);
-    expect(m.x).toBe(3050);
-    expect(m.y).toBe(250 + SNATCH_CARRY_OFFSET);
-    e.dead = true;
-    updateMen(s, SIM_DT);
-    expect(m.state).toBe('falling');
-  });
-});
-
 describe('chased', () => {
   it('a chased man keeps walking and can be picked up', () => {
     const s = createGameState(1);
@@ -310,7 +295,6 @@ describe('checkUnstable', () => {
     const nemesite = addEnemy(s, 'nemesite', 6000, 300);
     checkUnstable(s);
     expect(s.unstable).toBe(true);
-    expect(s.menRemaining).toBe(0);
     expect(planter.kind).toBe('antimatter');
     expect(android.kind).toBe('antimatter');
     expect(planter.orbitX).toBeCloseTo(4000 - 80);

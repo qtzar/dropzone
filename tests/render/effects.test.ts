@@ -4,7 +4,7 @@ import { createGameState } from '../../src/game/state';
 import type { GameEvent } from '../../src/game/events';
 
 const s = createGameState(1);
-const explosion: GameEvent = { type: 'explosion', x: 1000, y: 300, source: 'snatcher', big: false };
+const explosion: GameEvent = { type: 'explosion', x: 1000, y: 300, source: 'planter', big: false };
 
 describe('Effects', () => {
   it('explosions spawn particles and add trauma (screen shake)', () => {

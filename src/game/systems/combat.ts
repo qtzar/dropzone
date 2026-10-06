@@ -1,32 +1,19 @@
-import { range } from '../../core/rng';
 import type { GameState, Enemy } from '../state';
 import { emit } from '../events';
 import { findMan, findEnemy } from '../query';
-import { createEnemy, convertEnemy, killPoints } from '../entities/enemies';
+import { convertEnemy, killPoints } from '../entities/enemies';
 import { laserHitsCircle, circlesOverlap } from './collision';
 import { registerKill, resetCombo } from './scoring';
 import { releaseTrailers, trailerHeadHit } from './ai/spawners';
 import {
-  HITSTOP_MULTI, HITSTOP_HUNTER, PLAYER_RADIUS, MAN_RADIUS, TRAIL_RADIUS, RESPAWN_DELAY,
+  HITSTOP_MULTI, HITSTOP_NMEYE, PLAYER_RADIUS, MAN_RADIUS, RESPAWN_DELAY,
 } from '../constants';
 
 const SHOT_RADIUS = 3;
-const ORB_FRAGMENTS = 3;
 
 export function killEnemy(s: GameState, e: Enemy): void {
   if (e.dead) return;
   e.dead = true;
-
-  if (e.carryingId !== null) {
-    const m = findMan(s, e.carryingId);
-    if (m && m.state === 'snatched') {
-      m.state = 'falling';
-      m.holderId = null;
-      m.vy = 0;
-      m.fallStartY = m.y;
-    }
-    e.carryingId = null;
-  }
 
   if (e.kind === 'planter' && e.linkedId !== null) {
     // Killed while lowering: its Android drops.
@@ -54,20 +41,10 @@ export function killEnemy(s: GameState, e: Enemy): void {
 
   if (e.kind === 'spore') releaseTrailers(s, e);
 
-  if (e.kind === 'orb') {
-    for (let i = 0; i < ORB_FRAGMENTS; i++) {
-      const a = (i / ORB_FRAGMENTS) * Math.PI * 2 + range(s.rng, 0, 0.5);
-      const f = createEnemy(s, 'fragment', e.x, e.y);
-      f.vx = Math.cos(a) * f.speed;
-      f.vy = Math.sin(a) * f.speed;
-      s.enemies.push(f);
-    }
-  }
-
   registerKill(s, killPoints(e), e.x, e.y);
-  const big = e.kind === 'hunter' || e.kind === 'orb' || e.kind === 'nmeye';
+  const big = e.kind === 'nmeye' || e.kind === 'spore';
   emit(s, { type: 'explosion', x: e.x, y: e.y, source: e.kind, big });
-  if (e.kind === 'hunter' || e.kind === 'nmeye') s.hitStop = Math.max(s.hitStop, HITSTOP_HUNTER);
+  if (e.kind === 'nmeye') s.hitStop = Math.max(s.hitStop, HITSTOP_NMEYE);
 }
 
 export function resolveLaserHits(s: GameState): void {
@@ -120,7 +97,7 @@ export function killPlayer(s: GameState): void {
   }
 }
 
-/** True if any hazard (enemy, enemy shot, trail) overlaps the circle. Consumes a shot that hits. */
+/** True if an enemy or enemy shot overlaps the circle. Consumes a shot that hits. */
 function hitByHazard(s: GameState, x: number, y: number, r: number): boolean {
   for (const e of s.enemies) {
     if (!e.dead && circlesOverlap(x, y, r, e.x, e.y, e.radius)) return true;
@@ -130,9 +107,6 @@ function hitByHazard(s: GameState, x: number, y: number, r: number): boolean {
       sh.life = 0;
       return true;
     }
-  }
-  for (const t of s.trails) {
-    if (circlesOverlap(x, y, r, t.x, t.y, TRAIL_RADIUS)) return true;
   }
   return false;
 }

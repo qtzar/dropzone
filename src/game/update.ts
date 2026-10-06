@@ -2,7 +2,7 @@ import type { Actions } from '../core/input';
 import type { GameState } from './state';
 import { updatePlayerMovement, updatePlayerTimers } from './systems/player';
 import { updateFiring, updateLasers } from './systems/weapons';
-import { updateEnemies, updateShots, updateTrails } from './systems/ai';
+import { updateEnemies, updateShots } from './systems/ai';
 import { updateMen, checkUnstable } from './systems/rescue';
 import { resolveLaserHits, resolvePlayerHits, pruneDead } from './systems/combat';
 import { tickCombo } from './systems/scoring';
@@ -38,7 +38,6 @@ export function update(s: GameState, a: Actions, dt: number): void {
   updateLasers(s, dt);
   updateEnemies(s, dt);
   updateShots(s, dt);
-  updateTrails(s, dt);
   updateVolcanoes(s, dt);
   updateHazards(s, dt);
   updateMen(s, dt);

@@ -3,12 +3,9 @@ import type { ExplosionSource } from '../game/events';
 export const PALETTE = {
   player: '#22e6ff',
   man: '#4dff88',
-  snatcher: '#ff3df2',
   nemesite: '#ff3b3b',
   trailer: '#ff9a1f',
-  orb: '#a46bff',
-  fragment: '#c99bff',
-  hunter: '#ffe066',
+  gold: '#ffe066',
   planter: '#ff4fd8',
   android: '#b8ff3a',
   spore: '#c56bff',

@@ -11,7 +11,7 @@ export function drawDebug(ctx: CanvasRenderingContext2D, s: GameState, camX: num
     `SEED ${s.seed}`,
     `WAVE ${s.wave}  T ${s.waveTime.toFixed(1)}`,
     `ENEMIES ${s.enemies.length}`,
-    `SHOTS ${s.shots.length}  TRAILS ${s.trails.length}`,
+    `SHOTS ${s.shots.length}  HAZARDS ${s.magma.length + s.acid.length + s.bolts.length + s.eyeBombs.length}`,
     `MEN ${aliveMen}/${s.men.length}`,
     `PARTICLES ${particles}`,
     `MULT x${s.multiplier}  UNSTABLE ${s.unstable}`,

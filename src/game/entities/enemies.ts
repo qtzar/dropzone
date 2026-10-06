@@ -15,10 +15,6 @@ export interface EnemyStats {
 }
 
 export const ENEMY_STATS: Record<EnemyKind, EnemyStats> = {
-  snatcher: { radius: 14, points: 150, speed: 130, fireMult: 2 },
-  orb: { radius: 16, points: 100, speed: 60, fireMult: 0 },
-  fragment: { radius: 7, points: 50, speed: 280, fireMult: 0 },
-  hunter: { radius: 15, points: 500, speed: 400, fireMult: 0.5 },
   planter: { radius: 15, points: 250, speed: 90, fireMult: 2 },
   android: { radius: 9, points: 50, speed: 29, fireMult: 0 },
   nemesite: { radius: 13, points: 150, speed: 260, fireMult: 0.6 },
@@ -35,13 +31,10 @@ export function killPoints(e: Enemy): number {
   return ENEMY_STATS[e.kind].points;
 }
 
-export const AGGRESSIVE_SPEED_MULT = 1.3;
-export const AGGRESSIVE_FIRE_MULT = 0.7;
-
 export function fireInterval(s: GameState, e: Enemy): number {
   const m = ENEMY_STATS[e.kind].fireMult;
   if (m === 0) return Infinity;
-  return s.enemyFireInterval * m * (e.aggressive ? AGGRESSIVE_FIRE_MULT : 1);
+  return s.enemyFireInterval * m;
 }
 
 export function resetFireTimer(s: GameState, e: Enemy): void {
@@ -49,8 +42,8 @@ export function resetFireTimer(s: GameState, e: Enemy): void {
   e.fireTimer = i === Infinity ? Infinity : i * range(s.rng, 0.7, 1.3);
 }
 
-function speedFor(s: GameState, kind: EnemyKind, aggressive: boolean): number {
-  return ENEMY_STATS[kind].speed * s.speedScale * (aggressive ? AGGRESSIVE_SPEED_MULT : 1);
+function speedFor(s: GameState, kind: EnemyKind): number {
+  return ENEMY_STATS[kind].speed * s.speedScale;
 }
 
 /** Puts an Antimatter on its orbit so that its current position is angle 0 of the circle. */
@@ -70,14 +63,11 @@ export function createEnemy(s: GameState, kind: EnemyKind, x: number, y: number)
     vx: 0,
     vy: 0,
     radius: ENEMY_STATS[kind].radius,
-    speed: speedFor(s, kind, false),
+    speed: speedFor(s, kind),
     fireTimer: 0,
     phase: range(s.rng, 0, Math.PI * 2),
     homeY: y,
     targetId: null,
-    carryingId: null,
-    aggressive: false,
-    trailTimer: 0,
     linkedId: null,
     tetherLen: 0,
     dodgeTimer: 0,
@@ -94,10 +84,6 @@ export function createEnemy(s: GameState, kind: EnemyKind, x: number, y: number)
     dead: false,
   };
   switch (kind) {
-    case 'orb':
-      e.vx = range(s.rng, -1, 1) * e.speed;
-      e.vy = range(s.rng, -0.6, 0.6) * e.speed;
-      break;
     case 'trailer':
       e.vx = chance(s.rng, 0.5) ? e.speed : -e.speed;
       e.homer = chance(s.rng, TRAILER_HOMER_CHANCE);
@@ -135,17 +121,11 @@ export function createEnemy(s: GameState, kind: EnemyKind, x: number, y: number)
 export function convertEnemy(s: GameState, e: Enemy, kind: EnemyKind): void {
   e.kind = kind;
   e.radius = ENEMY_STATS[kind].radius;
-  e.speed = speedFor(s, kind, e.aggressive);
+  e.speed = speedFor(s, kind);
   e.targetId = null;
-  e.carryingId = null;
   e.linkedId = null;
   e.tetherLen = 0;
   e.falling = false;
   e.dodgeTimer = 0;
   resetFireTimer(s, e);
-}
-
-export function makeAggressive(s: GameState, e: Enemy): void {
-  e.aggressive = true;
-  convertEnemy(s, e, e.kind === 'hunter' ? 'hunter' : 'nemesite');
 }
