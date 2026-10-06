@@ -3,10 +3,11 @@ import { createGameState } from '../../../src/game/state';
 import { NO_ACTIONS } from '../../../src/core/input';
 import { updateCloak, triggerBomb, updateRespawn, RESPAWN_Y } from '../../../src/game/systems/powerups';
 import {
-  SHIELD_START, SHIELD_DRAIN, RESPAWN_DELAY, RESPAWN_INVULN, START_BOMBS, HITSTOP_MULTI,
+  SIM_DT, PLANT_GRACE, SHIELD_START, SHIELD_DRAIN, RESPAWN_DELAY, RESPAWN_INVULN, START_BOMBS, HITSTOP_MULTI,
 } from '../../../src/game/constants';
 import { CAMERA_LEAD, WORLD_W, VIEW_W, shortestDx } from '../../../src/core/world';
-import { addEnemy } from '../helpers';
+import { updateEnemies } from '../../../src/game/systems/ai';
+import { addEnemy, addMan } from '../helpers';
 
 const CLOAK = { ...NO_ACTIONS, cloak: true };
 
@@ -82,6 +83,25 @@ describe('triggerBomb', () => {
     triggerBomb(s);
     expect(android.dead).toBe(false);
     expect(planter.dead).toBe(true);
+  });
+
+  it('bombing a lowering Planter kills it and releases its Android, which survives and falls', () => {
+    const s = createGameState(1);
+    s.landscape = { volcanoes: [{ x: 8000, timer: 99 }], lakeX: 6000, ditches: [9000], craters: [9500] };
+    s.waveTime = PLANT_GRACE;
+    s.player.facing = 1;
+    const px = s.player.x + 200;
+    addMan(s, px);
+    const planter = addEnemy(s, 'planter', px, 300);
+    planter.fireTimer = Infinity;
+    updateEnemies(s, SIM_DT);
+    const android = s.enemies.find((e) => e.kind === 'android')!;
+    expect(planter.linkedId).toBe(android.id);
+    triggerBomb(s);
+    expect(planter.dead).toBe(true);
+    expect(android.dead).toBe(false);
+    expect(android.linkedId).toBeNull();
+    expect(android.falling).toBe(true);
   });
 
   it('Spores killed by the bomb release Trailers that survive the blast', () => {
