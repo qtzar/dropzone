@@ -40,7 +40,7 @@ describe('erupt (normal mode)', () => {
 describe('erupt (white-hot mode)', () => {
   it('throws 2-3 bigger, faster rocks every 1-1.8 s when the planet is unstable', () => {
     const s = createGameState(1);
-    s.critical = true;
+    s.unstable = true;
     const v = oneVolcano(s, 0);
     for (let i = 0; i < 40; i++) {
       s.magma = [];
@@ -74,7 +74,7 @@ describe('updateVolcanoes', () => {
   it('a long normal timer is cut to the hot interval once the planet goes unstable', () => {
     const s = createGameState(1);
     oneVolcano(s, 4);
-    s.critical = true;
+    s.unstable = true;
     updateVolcanoes(s, HOT_INTERVAL_MAX + 0.01);
     expect(s.magma.length).toBeGreaterThanOrEqual(2);
   });

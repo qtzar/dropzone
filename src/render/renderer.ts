@@ -38,13 +38,13 @@ export class CanvasRenderer implements Renderer {
     const ctx = this.view.beginFrame();
     const shake = fx ? fx.shake() : { x: 0, y: 0 };
 
-    this.bg.drawSky(ctx, s.critical);
+    this.bg.drawSky(ctx, s.unstable);
     ctx.save();
     ctx.translate(shake.x, shake.y);
     this.bg.drawStars(ctx, cam.x);
-    this.bg.drawMountains(ctx, cam.x, s.critical);
-    this.bg.drawTerrain(ctx, s.terrain, cam.x, s.critical);
-    this.bg.drawLandscape(ctx, s.landscape, s.terrain, cam.x, s.time, s.critical);
+    this.bg.drawMountains(ctx, cam.x, s.unstable);
+    this.bg.drawTerrain(ctx, s.terrain, cam.x, s.unstable);
+    this.bg.drawLandscape(ctx, s.landscape, s.terrain, cam.x, s.time, s.unstable);
     this.bg.drawBase(ctx, s.baseX, cam.x, s.time);
 
     this.drawTrails(ctx, s, cam.x);

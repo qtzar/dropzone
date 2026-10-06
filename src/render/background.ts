@@ -39,14 +39,14 @@ export class Background {
     this.mountains = Array.from({ length: MOUNTAIN_POINTS }, () => range(rng, 470, 560));
   }
 
-  drawSky(ctx: CanvasRenderingContext2D, critical: boolean): void {
+  drawSky(ctx: CanvasRenderingContext2D, unstable: boolean): void {
     const g = ctx.createLinearGradient(0, 0, 0, VIEW_H);
-    g.addColorStop(0, critical ? '#1a0005' : '#02010a');
-    g.addColorStop(1, critical ? '#3a0010' : '#0a0630');
+    g.addColorStop(0, unstable ? '#1a0005' : '#02010a');
+    g.addColorStop(1, unstable ? '#3a0010' : '#0a0630');
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, VIEW_W, VIEW_H);
     const n = ctx.createRadialGradient(VIEW_W * 0.7, 250, 20, VIEW_W * 0.7, 250, 420);
-    n.addColorStop(0, critical ? 'rgba(255,40,80,0.12)' : 'rgba(120,60,255,0.10)');
+    n.addColorStop(0, unstable ? 'rgba(255,40,80,0.12)' : 'rgba(120,60,255,0.10)');
     n.addColorStop(1, 'rgba(0,0,0,0)');
     ctx.fillStyle = n;
     ctx.fillRect(0, 0, VIEW_W, VIEW_H);
@@ -72,7 +72,7 @@ export class Background {
     return this.mountains[i0] + (this.mountains[i1] - this.mountains[i0]) * t;
   }
 
-  drawMountains(ctx: CanvasRenderingContext2D, camX: number, critical: boolean): void {
+  drawMountains(ctx: CanvasRenderingContext2D, camX: number, unstable: boolean): void {
     const origin = camX * MOUNTAIN_FACTOR - VIEW_W / 2;
     ctx.beginPath();
     ctx.moveTo(0, VIEW_H);
@@ -81,14 +81,14 @@ export class Background {
     }
     ctx.lineTo(VIEW_W + MOUNTAIN_STEP, VIEW_H);
     ctx.closePath();
-    ctx.fillStyle = critical ? '#1c0410' : '#0b0a2a';
+    ctx.fillStyle = unstable ? '#1c0410' : '#0b0a2a';
     ctx.fill();
-    ctx.strokeStyle = critical ? 'rgba(255,60,90,0.35)' : 'rgba(90,90,200,0.35)';
+    ctx.strokeStyle = unstable ? 'rgba(255,60,90,0.35)' : 'rgba(90,90,200,0.35)';
     ctx.lineWidth = 1.5;
     ctx.stroke();
   }
 
-  drawTerrain(ctx: CanvasRenderingContext2D, terrain: number[], camX: number, critical: boolean): void {
+  drawTerrain(ctx: CanvasRenderingContext2D, terrain: number[], camX: number, unstable: boolean): void {
     const left = camX - VIEW_W / 2;
     const i0 = Math.floor(left / TERRAIN_STEP) - 1;
     const count = Math.ceil(VIEW_W / TERRAIN_STEP) + 3;
@@ -97,7 +97,7 @@ export class Background {
       const wx = (i0 + k) * TERRAIN_STEP;
       pts.push([wx - left, groundYAt(terrain, wx)]);
     }
-    const color = critical ? PALETTE.terrainCritical : PALETTE.terrain;
+    const color = unstable ? PALETTE.terrainUnstable : PALETTE.terrain;
 
     // Fill under the ridge
     ctx.beginPath();
@@ -106,7 +106,7 @@ export class Background {
     ctx.lineTo(pts[pts.length - 1][0], VIEW_H);
     ctx.closePath();
     const g = ctx.createLinearGradient(0, 560, 0, VIEW_H);
-    g.addColorStop(0, critical ? 'rgba(80,0,20,0.9)' : 'rgba(10,20,70,0.9)');
+    g.addColorStop(0, unstable ? 'rgba(80,0,20,0.9)' : 'rgba(10,20,70,0.9)');
     g.addColorStop(1, '#000');
     ctx.fillStyle = g;
     ctx.fill();

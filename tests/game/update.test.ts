@@ -3,7 +3,7 @@ import { createGameState } from '../../src/game/state';
 import { NO_ACTIONS } from '../../src/core/input';
 import { update } from '../../src/game/update';
 import { newGame } from '../../src/game/systems/waves';
-import { SIM_DT, RESCUE_POINTS, PLAYER_RADIUS } from '../../src/game/constants';
+import { SIM_DT, PLAYER_RADIUS } from '../../src/game/constants';
 import { BASE_GROUND_Y } from '../../src/game/terrain';
 import { addMan, addEnemy } from './helpers';
 
@@ -57,13 +57,14 @@ describe('update', () => {
 
   it('delivering a man through update scores the rescue', () => {
     const s = createGameState(1);
+    s.wave = 2;
     addEnemy(s, 'orb', 6000, 300);
     const m = addMan(s, s.baseX, 'carried');
     s.player.carryingId = m.id;
     s.player.y = BASE_GROUND_Y - PLAYER_RADIUS;
     update(s, NO_ACTIONS, SIM_DT);
     expect(m.state).toBe('saved');
-    expect(s.score).toBe(RESCUE_POINTS);
+    expect(s.score).toBe(200);
   });
 
   it('a cleared wave advances to the next wave', () => {

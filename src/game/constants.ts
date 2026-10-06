@@ -41,9 +41,14 @@ export const MAN_RADIUS = 8;
 export const MAN_WALK_SPEED = 18;
 export const MAN_FALL_GRAVITY = 300;
 export const MAN_SAFE_FALL = 200;
+/** A man who reaches the lake or a lava ditch walks back for this long (s) before heading for the base again. */
+export const MAN_TURN_MIN = 1;
+export const MAN_TURN_MAX = 2;
 export const MAN_CARRY_OFFSET = 26;
 export const SNATCH_CARRY_OFFSET = 20;
-export const RESCUE_POINTS = 500;
+/** Carried delivery scores 100 x wave, capped at 500. */
+export const RESCUE_POINTS_PER_WAVE = 100;
+export const RESCUE_POINTS_CAP = 500;
 export const CATCH_POINTS = 250;
 export const BASE_WIDTH = 160;
 /** Player must be within this height above the pad surface to deliver a man. */

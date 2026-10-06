@@ -27,7 +27,7 @@ describe('createEventAudio', () => {
       { type: 'bombDetonated', x: 0, y: 0 },
       { type: 'playerDied', x: 0, y: 0 },
       { type: 'extraLife' },
-      { type: 'planetCritical' },
+      { type: 'planetUnstable' },
       { type: 'cloakOn' },
       { type: 'cloakOff' },
       { type: 'waveCleared', wave: 1, bonus: 0, saved: 0 },

@@ -19,7 +19,7 @@ export const PALETTE = {
   laser: '#9ff6ff',
   shot: '#ff6a6a',
   terrain: '#3d7bff',
-  terrainCritical: '#ff3b5c',
+  terrainUnstable: '#ff3b5c',
   magma: '#ff7a1a',
   hotRock: '#fff3c4',
   lake: '#3ff0ff',

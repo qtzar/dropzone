@@ -66,7 +66,7 @@ describe('deterministic simulation', () => {
 });
 
 describe('wave progression', () => {
-  it('reaches wave 6 with a full set of men and a bonus bomb even after the planet went critical', () => {
+  it('reaches wave 6 with a full set of men and a bonus bomb even after the planet went unstable', () => {
     const s = newGame(42);
     s.lives = 99;
     let forced = false;

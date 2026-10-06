@@ -167,7 +167,7 @@ export interface GameState {
   multiplier: number;
   comboTimer: number;
   hitStop: number;
-  critical: boolean;
+  unstable: boolean;
   /** Men to spawn at the start of the next wave. */
   menRemaining: number;
   savedThisWave: number;
@@ -219,7 +219,7 @@ export function createGameState(seed: number): GameState {
     multiplier: 1,
     comboTimer: 0,
     hitStop: 0,
-    critical: false,
+    unstable: false,
     menRemaining: MEN_PER_WAVE,
     savedThisWave: 0,
     lastWaveBonus: 0,

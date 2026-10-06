@@ -162,7 +162,7 @@ export class Effects implements FxLayer {
         case 'extraLife':
           this.popup(s.player.x, s.player.y - 40, 'EXTRA LIFE', PALETTE.player);
           break;
-        case 'planetCritical':
+        case 'planetUnstable':
           this.addTrauma(0.5);
           this._flash = 0.6;
           this.flashColor = PALETTE.warn;

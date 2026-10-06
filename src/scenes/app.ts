@@ -153,7 +153,7 @@ export class App {
       this.fx.update(frameDt, s);
       updateCamera(this.camera, lerpWrapped(s.player.prevX, s.player.x, alpha), s.player.facing, frameDt);
     }
-    this.music.setIntensity(s.critical ? 2 : s.wave >= 5 ? 1 : 0);
+    this.music.setIntensity(s.unstable ? 2 : s.wave >= 5 ? 1 : 0);
     this.renderer.render(s, this.camera, alpha, this.fx);
     this.drawScreens();
   }

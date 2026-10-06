@@ -39,12 +39,12 @@ describe('startWave', () => {
 
   it('resets per-wave state', () => {
     const s = createGameState(1);
-    s.critical = true;
+    s.unstable = true;
     s.savedThisWave = 4;
     s.player.cloak = 0;
     s.shots.push({ x: 0, y: 0, vx: 0, vy: 0, life: 1 });
     startWave(s, 2);
-    expect(s.critical).toBe(false);
+    expect(s.unstable).toBe(false);
     expect(s.savedThisWave).toBe(0);
     expect(s.player.cloak).toBe(1);
     expect(s.shots).toHaveLength(0);
@@ -52,7 +52,7 @@ describe('startWave', () => {
     expect(s.nextNmeyeAt).toBe(NMEYE_DELAY);
   });
 
-  it('spawns no men after the planet went critical', () => {
+  it('spawns no men after the planet went unstable', () => {
     const s = createGameState(1);
     s.menRemaining = 0;
     startWave(s, 3);

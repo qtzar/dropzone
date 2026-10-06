@@ -10,7 +10,7 @@ import {
 
 /** Volcanoes go white-hot while the planet is unstable. */
 function whiteHot(s: GameState): boolean {
-  return s.critical;
+  return s.unstable;
 }
 
 /** Lobs magma (or white-hot rocks) out of a volcano's crater and resets its timer. */

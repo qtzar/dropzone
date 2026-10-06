@@ -19,7 +19,6 @@ export type GameEvent =
   | { type: 'cloakOff' }
   | { type: 'waveStarted'; wave: number }
   | { type: 'waveCleared'; wave: number; bonus: number; saved: number }
-  | { type: 'planetCritical' }
   | { type: 'hunterSpawned'; x: number; y: number }
   | { type: 'extraLife' }
   | { type: 'manWhistle'; x: number; y: number }

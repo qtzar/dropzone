@@ -14,7 +14,7 @@ export function drawDebug(ctx: CanvasRenderingContext2D, s: GameState, camX: num
     `SHOTS ${s.shots.length}  TRAILS ${s.trails.length}`,
     `MEN ${aliveMen}/${s.men.length}`,
     `PARTICLES ${particles}`,
-    `MULT x${s.multiplier}  CRIT ${s.critical}`,
+    `MULT x${s.multiplier}  UNSTABLE ${s.unstable}`,
   ];
   ctx.font = '12px monospace';
   ctx.textAlign = 'left';

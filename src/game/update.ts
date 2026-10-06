@@ -3,7 +3,7 @@ import type { GameState } from './state';
 import { updatePlayerMovement, updatePlayerTimers } from './systems/player';
 import { updateFiring, updateLasers } from './systems/weapons';
 import { updateEnemies, updateShots, updateTrails } from './systems/ai';
-import { updateMen, checkCritical } from './systems/rescue';
+import { updateMen, checkUnstable } from './systems/rescue';
 import { resolveLaserHits, resolvePlayerHits, pruneDead } from './systems/combat';
 import { tickCombo } from './systems/scoring';
 import { updateWaveTimers, checkWaveClear, updateWavePhase } from './systems/waves';
@@ -45,7 +45,7 @@ export function update(s: GameState, a: Actions, dt: number): void {
   resolveLaserHits(s);
   resolvePlayerHits(s);
   resolveHazardHits(s);
-  checkCritical(s);
+  checkUnstable(s);
   tickCombo(s, dt);
   updateWaveTimers(s, dt);
   pruneDead(s);

@@ -47,7 +47,7 @@ export function createEventAudio(sfx: SfxPlayer, now: () => number): (events: re
         case 'extraLife':
           sfx.extraLife();
           break;
-        case 'planetCritical':
+        case 'planetUnstable':
           sfx.klaxon();
           break;
         case 'cloakOn':

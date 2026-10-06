@@ -25,7 +25,7 @@ export function startWave(s: GameState, wave: number): void {
   s.waveTime = 0;
   s.nextNmeyeAt = NMEYE_DELAY;
   s.savedThisWave = 0;
-  s.critical = false;
+  s.unstable = false;
   s.phase = 'playing';
   s.phaseTimer = 0;
 

@@ -3,20 +3,36 @@ import { range, chance } from '../../core/rng';
 import { allocId, type GameState, type Man } from '../state';
 import { emit } from '../events';
 import { groundYAt, BASE_GROUND_Y } from '../terrain';
+import { isLake, isLava } from '../landscape';
 import { findEnemy } from '../query';
-import { makeAggressive } from '../entities/enemies';
+import { convertEnemy, startOrbit } from '../entities/enemies';
 import { circlesOverlap } from './collision';
 import { awardBonus } from './scoring';
 import {
   MAN_RADIUS, MAN_WALK_SPEED, MAN_FALL_GRAVITY, MAN_SAFE_FALL, MAN_CARRY_OFFSET, SNATCH_CARRY_OFFSET,
-  PLAYER_RADIUS, RESCUE_POINTS, CATCH_POINTS, BASE_WIDTH, BASE_DELIVERY_HEIGHT,
+  PLAYER_RADIUS, RESCUE_POINTS_PER_WAVE, RESCUE_POINTS_CAP, CATCH_POINTS, BASE_WIDTH, BASE_DELIVERY_HEIGHT,
+  MAN_TURN_MIN, MAN_TURN_MAX,
 } from '../constants';
 
 const CATCH_SLOP = 4;
+/** Men never spawn closer than this to the base pad edge. */
+const SPAWN_BASE_CLEAR = 200;
+const SPAWN_HAZARD_CLEAR = 24;
+
+/** Moves a spawn x off the base pad surroundings and out of the lake or a lava ditch. */
+function safeSpawnX(s: GameState, x: number): number {
+  const dBase = shortestDx(s.baseX, x);
+  const minBase = BASE_WIDTH / 2 + SPAWN_BASE_CLEAR;
+  if (Math.abs(dBase) < minBase) x = wrapX(s.baseX + (dBase < 0 ? -1 : 1) * minBase);
+  for (let i = 0; i < 40 && (isLake(s.landscape, x) || isLava(s.landscape, x)); i++) {
+    x = wrapX(x + SPAWN_HAZARD_CLEAR);
+  }
+  return x;
+}
 
 export function spawnMen(s: GameState, count: number): void {
   for (let i = 0; i < count; i++) {
-    const x = wrapX((i + 0.5) * (WORLD_W / count) + range(s.rng, -200, 200));
+    const x = safeSpawnX(s, wrapX((i + 0.5) * (WORLD_W / count) + range(s.rng, -200, 200)));
     s.men.push({
       id: allocId(s),
       x,
@@ -26,7 +42,7 @@ export function spawnMen(s: GameState, count: number): void {
       state: 'walking',
       fallStartY: 0,
       holderId: null,
-      walkTimer: range(s.rng, 2, 5),
+      walkTimer: 0,
     });
   }
 }
@@ -47,14 +63,40 @@ function startFalling(m: Man): void {
   m.fallStartY = m.y;
 }
 
+function blockedAt(s: GameState, x: number): boolean {
+  return isLake(s.landscape, x) || isLava(s.landscape, x);
+}
+
+/**
+ * Walks toward the base by the shortest wrapped direction. At the edge of the lake or a lava
+ * ditch the man turns back and walks away for 1-2 s (walkTimer), then heads for the base again.
+ */
 function walk(s: GameState, m: Man, dt: number): void {
-  m.walkTimer -= dt;
-  if (m.walkTimer <= 0) {
-    m.dir = chance(s.rng, 0.5) ? 1 : -1;
-    m.walkTimer = range(s.rng, 2, 5);
+  if (m.walkTimer > 0) m.walkTimer = Math.max(0, m.walkTimer - dt);
+  else m.dir = shortestDx(m.x, s.baseX) < 0 ? -1 : 1;
+  const nx = wrapX(m.x + m.dir * MAN_WALK_SPEED * dt);
+  if (blockedAt(s, nx) && !blockedAt(s, m.x)) {
+    m.dir = m.dir === 1 ? -1 : 1;
+    m.walkTimer = range(s.rng, MAN_TURN_MIN, MAN_TURN_MAX);
+  } else {
+    m.x = nx;
   }
-  m.x = wrapX(m.x + m.dir * MAN_WALK_SPEED * dt);
   m.y = groundYAt(s.terrain, m.x) - MAN_RADIUS;
+}
+
+/** A man who walks onto the base pad rescues himself: a survivor, but no points. */
+function checkSelfRescue(s: GameState, m: Man): boolean {
+  if (Math.abs(shortestDx(m.x, s.baseX)) > BASE_WIDTH / 2) return false;
+  m.state = 'saved';
+  m.holderId = null;
+  s.savedThisWave++;
+  emit(s, { type: 'manSelfRescued', x: m.x, y: m.y });
+  return true;
+}
+
+/** Carried delivery: 100 x wave, capped at 500 (the combo multiplier applies on top). */
+export function rescuePoints(wave: number): number {
+  return Math.min(RESCUE_POINTS_CAP, RESCUE_POINTS_PER_WAVE * Math.max(1, wave));
 }
 
 /** True while the Android recorded in holderId still exists and is chasing this man. */
@@ -79,7 +121,7 @@ function updateCarried(s: GameState, m: Man): void {
     m.state = 'saved';
     p.carryingId = null;
     s.savedThisWave++;
-    awardBonus(s, RESCUE_POINTS, m.x, m.y);
+    awardBonus(s, rescuePoints(s.wave), m.x, m.y);
     emit(s, { type: 'manRescued', x: m.x, y: m.y });
   }
 }
@@ -112,7 +154,7 @@ function updateFalling(s: GameState, m: Man, dt: number): void {
   if (m.y >= ground) {
     m.y = ground;
     m.vy = 0;
-    if (ground - m.fallStartY > MAN_SAFE_FALL) {
+    if (ground - m.fallStartY > MAN_SAFE_FALL || isLava(s.landscape, m.x)) {
       m.state = 'dead';
       emit(s, { type: 'manDied', x: m.x, y: m.y });
       emit(s, { type: 'explosion', x: m.x, y: m.y, source: 'man', big: false });
@@ -125,6 +167,7 @@ function updateFalling(s: GameState, m: Man, dt: number): void {
 function updateWalking(s: GameState, m: Man, dt: number): void {
   const p = s.player;
   walk(s, m, dt);
+  if (checkSelfRescue(s, m)) return;
   if (playerCanTake(s) && circlesOverlap(p.x, p.y, PLAYER_RADIUS, m.x, m.y, MAN_RADIUS)) {
     m.state = 'carried';
     m.holderId = null;
@@ -163,11 +206,16 @@ export function updateMen(s: GameState, dt: number): void {
   }
 }
 
-export function checkCritical(s: GameState): void {
-  if (s.critical || s.men.length === 0) return;
+/** Planet unstable: the wave had men and every one of them is dead. */
+export function checkUnstable(s: GameState): void {
+  if (s.unstable || s.men.length === 0) return;
   if (!s.men.every((m) => m.state === 'dead')) return;
-  s.critical = true;
+  s.unstable = true;
   s.menRemaining = 0;
-  for (const e of s.enemies) if (!e.dead) makeAggressive(s, e);
-  emit(s, { type: 'planetCritical' });
+  for (const e of s.enemies) {
+    if (e.dead || (e.kind !== 'planter' && e.kind !== 'android')) continue;
+    convertEnemy(s, e, 'antimatter');
+    startOrbit(e);
+  }
+  emit(s, { type: 'planetUnstable' });
 }

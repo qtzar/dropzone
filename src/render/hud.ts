@@ -48,7 +48,7 @@ function drawScanner(ctx: CanvasRenderingContext2D, s: GameState, camX: number):
   ctx.clip();
 
   // Mini terrain
-  ctx.strokeStyle = s.critical ? PALETTE.terrainCritical : PALETTE.terrain;
+  ctx.strokeStyle = s.unstable ? PALETTE.terrainUnstable : PALETTE.terrain;
   ctx.beginPath();
   const step = 128;
   const offsets = scannerTerrainOffsets(step);
@@ -128,10 +128,10 @@ function drawRightPanel(ctx: CanvasRenderingContext2D, s: GameState): void {
 
 function drawCenterMessages(ctx: CanvasRenderingContext2D, s: GameState): void {
   ctx.textAlign = 'center';
-  if (s.critical && Math.floor(s.time * 3) % 2 === 0) {
+  if (s.unstable && Math.floor(s.time * 3) % 2 === 0) {
     ctx.fillStyle = PALETTE.warn;
     ctx.font = 'bold 20px monospace';
-    ctx.fillText('PLANET CRITICAL', VIEW_W / 2, SCANNER_H + 36);
+    ctx.fillText('PLANET UNSTABLE', VIEW_W / 2, SCANNER_H + 36);
   }
   if (s.phase === 'waveComplete') {
     ctx.fillStyle = PALETTE.text;
