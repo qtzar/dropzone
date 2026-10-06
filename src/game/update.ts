@@ -9,6 +9,7 @@ import { tickCombo } from './systems/scoring';
 import { updateWaveTimers, checkWaveClear, updateWavePhase } from './systems/waves';
 import { updateCloak, triggerBomb, updateRespawn } from './systems/powerups';
 import { updateHazards, resolveHazardHits } from './systems/hazards';
+import { updateVolcanoes } from './systems/volcanoes';
 
 export function update(s: GameState, a: Actions, dt: number): void {
   if (s.phase === 'gameOver') return;
@@ -38,6 +39,7 @@ export function update(s: GameState, a: Actions, dt: number): void {
   updateEnemies(s, dt);
   updateShots(s, dt);
   updateTrails(s, dt);
+  updateVolcanoes(s, dt);
   updateHazards(s, dt);
   updateMen(s, dt);
   resolveLaserHits(s);

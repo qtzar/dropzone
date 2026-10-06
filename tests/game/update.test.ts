@@ -87,3 +87,13 @@ describe('update hazards', () => {
     expect(s.acid).toHaveLength(0);
   });
 });
+
+describe('update volcanoes', () => {
+  it('volcanoes erupt during play', () => {
+    const s = createGameState(1);
+    addEnemy(s, 'orb', 6000, 300);
+    s.player.invuln = 999;
+    for (let t = 0; t < 4.1; t += SIM_DT) update(s, NO_ACTIONS, SIM_DT);
+    expect(s.events.some((e) => e.type === 'volcanoErupt')).toBe(true);
+  });
+});

@@ -76,6 +76,20 @@ export const TRAILER_HOMER_CHANCE = 0.5;
 export const NMEYE_BOMB_INTERVAL = 0.6;
 export const ANTIMATTER_ORBIT_RADIUS = 80;
 
+// Volcanoes (normal magma, and white-hot rocks while the planet is unstable)
+export const MAGMA_RADIUS = 5;
+export const MAGMA_INTERVAL_MIN = 2.5;
+export const MAGMA_INTERVAL_MAX = 4;
+export const MAGMA_VX_MIN = 60;
+export const MAGMA_VX_MAX = 160;
+export const MAGMA_VY_MIN = -380;
+export const MAGMA_VY_MAX = -260;
+export const HOT_ROCK_RADIUS = 8;
+export const HOT_INTERVAL_MIN = 1;
+export const HOT_INTERVAL_MAX = 1.8;
+export const HOT_VY_MIN = -480;
+export const HOT_VY_MAX = -340;
+
 // Hazards
 export const MAGMA_GRAVITY = 300;
 export const ACID_SPEED = 220;

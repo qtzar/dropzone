@@ -65,3 +65,11 @@ describe('Effects', () => {
     expect(fx.trauma).toBe(0);
   });
 });
+
+describe('Effects volcano eruptions', () => {
+  it('an eruption sprays particles out of the crater', () => {
+    const fx = new Effects();
+    fx.consume([{ type: 'volcanoErupt', x: 3000, y: 500, whiteHot: false }], s);
+    expect(fx.activeParticleCount()).toBeGreaterThanOrEqual(14);
+  });
+});

@@ -167,6 +167,13 @@ export class Effects implements FxLayer {
           this._flash = 0.6;
           this.flashColor = PALETTE.warn;
           break;
+        case 'volcanoErupt': {
+          const color = e.whiteHot ? PALETTE.hotRock : PALETTE.magma;
+          for (let i = 0; i < 14; i++) {
+            this.spawn(e.x, e.y, rand(-90, 90), rand(-260, -120), rand(0.4, 0.8), rand(1.5, 3), color, 1);
+          }
+          break;
+        }
         case 'hunterSpawned':
           this.ring(e.x, e.y, 90, PALETTE.hunter, 0.5);
           break;
