@@ -12,6 +12,7 @@ import { playerVisible, homeOnPlayer } from './common';
 import { updatePlanter, updateAndroid } from './planter';
 import { updateNemesite, updateNmeye, updateAntimatter } from './homers';
 import { updateTrailer } from './spawners';
+import { updateBlunderstorm } from './storm';
 
 const SNATCHER_SEEK_RANGE = 2500;
 const GRAB_DISTANCE = 10;
@@ -168,10 +169,12 @@ export function updateEnemies(s: GameState, dt: number): void {
       case 'android':
         updateAndroid(s, e, dt);
         break;
+      case 'blunderstorm':
+        updateBlunderstorm(s, e, dt);
+        break;
       case 'orb':
       case 'fragment':
       case 'spore':
-      case 'blunderstorm':
         break;
     }
     integrate(s, e, dt);

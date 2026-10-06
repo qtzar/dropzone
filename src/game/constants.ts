@@ -100,6 +100,11 @@ export const ANTIMATTER_SPIN = 3;
 export const TRAILER_TURN_RATE = 1.5;
 export const TRAILER_AMPLITUDE = 80;
 export const SPORE_TRAILERS = 4;
+export const STORM_ACID_DROPS = 5;
+export const STORM_ACID_SPACING = 16;
+/** Seconds between a Blunderstorm's rumble and its proton bolt. */
+export const STORM_BOLT_DELAY = 0.8;
+export const STORM_BOB = 20;
 
 // Volcanoes (normal magma, and white-hot rocks while the planet is unstable)
 export const MAGMA_RADIUS = 5;
