@@ -1,6 +1,6 @@
 import { createView } from './render/canvas';
 import { InputManager, consumeEdges } from './core/input';
-import { createGameState } from './game/state';
+import { newGame } from './game/systems/waves';
 import { update } from './game/update';
 import { startLoop } from './core/loop';
 import { SIM_DT } from './game/constants';
@@ -10,7 +10,7 @@ import { lerpWrapped } from './core/world';
 
 const view = createView(document.getElementById('game') as HTMLCanvasElement);
 const input = new InputManager(window);
-const state = createGameState((Math.random() * 2 ** 32) >>> 0);
+const state = newGame((Math.random() * 2 ** 32) >>> 0);
 const camera = createCamera(state.player.x);
 const renderer = new CanvasRenderer(view);
 let actions = input.poll();
