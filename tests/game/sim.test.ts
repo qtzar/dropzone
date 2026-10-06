@@ -36,6 +36,7 @@ function allFinite(s: GameState): boolean {
   for (const e of s.enemies) nums.push(e.x, e.y, e.vx, e.vy);
   for (const m of s.men) nums.push(m.x, m.y);
   for (const sh of s.shots) nums.push(sh.x, sh.y);
+  for (const m of s.magma) nums.push(m.x, m.y);
   return nums.every(Number.isFinite);
 }
 
@@ -47,7 +48,7 @@ describe('deterministic simulation', () => {
     expect(allFinite(s)).toBe(true);
     expect(s.enemies.length).toBeLessThan(200);
     expect(s.shots.length).toBeLessThan(500);
-    expect(s.trails.length).toBeLessThan(500);
+    expect(s.magma.length + s.acid.length + s.eyeBombs.length).toBeLessThan(500);
     expect(s.wave).toBeGreaterThanOrEqual(1);
     expect(s.score).toBeGreaterThanOrEqual(0);
     expect(s.lives).toBeGreaterThanOrEqual(0);
@@ -66,24 +67,34 @@ describe('deterministic simulation', () => {
 });
 
 describe('wave progression', () => {
-  it('reaches wave 6 with a full set of men and a bonus bomb even after the planet went unstable', () => {
+  it('reaches wave 6 with a fresh shipment of men even after the planet went unstable', () => {
     const s = newGame(42);
     s.lives = 99;
-    let forced = false;
-    let bombsBefore = s.bombs;
+    let unstableSeen = false;
+    const menAtStart: number[] = [];
+    let lastWave = 0;
     for (let i = 0; i < 120 * 600 && s.wave < 6; i++) {
-      if (s.wave === 3 && !forced) {
-        s.menRemaining = 0;
-        forced = true;
+      if (s.wave !== lastWave) {
+        menAtStart[s.wave] = s.men.length;
+        lastWave = s.wave;
       }
-      if (s.wave === 5) bombsBefore = s.bombs;
+      // Clear the enemies and resolve every man: wave 3 loses them all, the others are saved.
       s.enemies = [];
+      for (const m of s.men) {
+        if (m.state === 'saved' || m.state === 'dead') continue;
+        m.state = s.wave === 3 ? 'dead' : 'saved';
+        if (m.state === 'saved') s.savedThisWave++;
+      }
+      s.player.carryingId = null;
       update(s, NO_ACTIONS, SIM_DT);
+      if (s.unstable) unstableSeen = true;
       s.events.length = 0;
     }
-    expect(forced).toBe(true);
     expect(s.wave).toBe(6);
-    expect(s.men).toHaveLength(MEN_PER_WAVE);
-    expect(s.bombs).toBe(bombsBefore + 1);
+    expect(unstableSeen).toBe(true);
+    expect(menAtStart[2]).toBe(MEN_PER_WAVE);
+    expect(menAtStart[4]).toBe(0); // planet went unstable in wave 3
+    expect(menAtStart[5]).toBe(0); // invasion wave
+    expect(s.men).toHaveLength(MEN_PER_WAVE); // shipment
   });
 });

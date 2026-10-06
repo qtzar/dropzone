@@ -2,19 +2,23 @@ import { VIEW_W, WORLD_W, wrapX } from '../../core/world';
 import { range, chance } from '../../core/rng';
 import { createGameState, type GameState, type EnemyKind } from '../state';
 import { emit } from '../events';
-import { findMan } from '../query';
-import { getWaveTuning } from '../tuning';
+import {
+  getWaveTuning, getInvasionTuning, effectiveWave, isInvasionWave, isShipmentWave,
+} from '../tuning';
 import { createEnemy } from '../entities/enemies';
 import { spawnMen } from './rescue';
-import { clearHazards } from './hazards';
 import { addScore } from './scoring';
+import { clearHazards } from './hazards';
 import {
-  CEILING_Y, NMEYE_DELAY, NMEYE_REPEAT, MILESTONE_EVERY, MEN_PER_WAVE, MAX_BOMBS,
-  SPAWN_SAFE_DISTANCE, WAVE_COMPLETE_TIME, WAVE_BONUS_PER_MAN,
+  CEILING_Y, NMEYE_DELAY, NMEYE_REPEAT, MEN_PER_WAVE, MAX_BOMBS,
+  SPAWN_SAFE_DISTANCE, WAVE_COMPLETE_TIME, WAVE_BONUS_PER_MAN, WAVE_BONUS_CAP,
 } from '../constants';
 
 const SPAWN_MIN_Y = CEILING_Y + 40;
 const SPAWN_MAX_Y = 420;
+
+/** Men in these states keep the wave going. */
+const UNRESOLVED = new Set(['walking', 'carried', 'chased', 'falling']);
 
 function spawnX(s: GameState): number {
   return wrapX(s.player.x + range(s.rng, SPAWN_SAFE_DISTANCE, WORLD_W - SPAWN_SAFE_DISTANCE));
@@ -29,38 +33,41 @@ export function startWave(s: GameState, wave: number): void {
   s.phase = 'playing';
   s.phaseTimer = 0;
 
-  if (wave > 1 && (wave - 1) % MILESTONE_EVERY === 0) {
-    s.menRemaining = MEN_PER_WAVE;
+  if (isShipmentWave(wave)) {
+    s.survivors = MEN_PER_WAVE;
     s.bombs = Math.min(MAX_BOMBS, s.bombs + 1);
   }
 
-  const t = getWaveTuning(wave);
+  const t = getWaveTuning(effectiveWave(wave));
   s.speedScale = t.speedScale;
   s.enemyFireInterval = t.fireInterval;
 
   s.enemies = [];
   s.shots = [];
-  s.trails = [];
   clearHazards(s);
   s.lasers = [];
   s.men = [];
   s.player.carryingId = null;
   s.player.cloak = 1;
 
-  spawnMen(s, s.menRemaining);
+  const invasion = isInvasionWave(wave);
+  // Invasion waves have no men: the survivors wait for the next wave.
+  if (!invasion) spawnMen(s, s.survivors);
 
-  const groups: Array<[EnemyKind, number]> = [
-    ['snatcher', t.snatchers],
-    ['nemesite', t.nemesites],
-    ['trailer', t.trailers],
-    ['orb', t.orbs],
-  ];
+  let groups: Array<[EnemyKind, number]>;
+  if (invasion) {
+    const inv = getInvasionTuning(wave);
+    groups = [['trailer', inv.trailers], ['spore', inv.spores]];
+  } else {
+    groups = [['planter', t.planters], ['spore', t.spores], ['blunderstorm', t.storms]];
+  }
   for (const [kind, n] of groups) {
     for (let i = 0; i < n; i++) {
       s.enemies.push(createEnemy(s, kind, spawnX(s), range(s.rng, SPAWN_MIN_Y, SPAWN_MAX_Y)));
     }
   }
   emit(s, { type: 'waveStarted', wave });
+  if (invasion) emit(s, { type: 'invasionWave', wave });
 }
 
 export function updateWaveTimers(s: GameState, dt: number): void {
@@ -75,19 +82,21 @@ export function updateWaveTimers(s: GameState, dt: number): void {
   }
 }
 
+/** End-of-wave bonus per survivor saved this wave: 100 x wave, capped at 500. */
+export function waveBonusPerMan(wave: number): number {
+  return Math.min(WAVE_BONUS_CAP, WAVE_BONUS_PER_MAN * effectiveWave(wave));
+}
+
+/** The wave ends when no enemy is alive and every man is saved or dead. */
 export function checkWaveClear(s: GameState): void {
   if (s.phase !== 'playing') return;
   if (s.enemies.some((e) => !e.dead)) return;
+  if (s.men.some((m) => UNRESOLVED.has(m.state))) return;
 
-  const p = s.player;
-  if (p.carryingId !== null) {
-    const m = findMan(s, p.carryingId);
-    if (m) m.state = 'saved';
-    p.carryingId = null;
-    s.savedThisWave++;
-  }
+  // Men saved this wave are re-deployed next wave. Invasion waves have none, so survivors keep waiting.
+  if (!isInvasionWave(s.wave)) s.survivors = s.savedThisWave;
 
-  const bonus = s.savedThisWave * WAVE_BONUS_PER_MAN * s.wave;
+  const bonus = s.savedThisWave * waveBonusPerMan(s.wave) * s.multiplier;
   addScore(s, bonus);
   s.lastWaveBonus = bonus;
   s.phase = 'waveComplete';

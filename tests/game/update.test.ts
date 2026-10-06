@@ -70,6 +70,7 @@ describe('update', () => {
   it('a cleared wave advances to the next wave', () => {
     const s = newGame(5);
     s.enemies = [];
+    for (const m of s.men) m.state = 'saved';
     update(s, NO_ACTIONS, SIM_DT);
     expect(s.phase).toBe('waveComplete');
     for (let t = 0; t < 4; t += SIM_DT) update(s, NO_ACTIONS, SIM_DT);

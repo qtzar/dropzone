@@ -53,7 +53,9 @@ export const CATCH_POINTS = 250;
 export const BASE_WIDTH = 160;
 /** Player must be within this height above the pad surface to deliver a man. */
 export const BASE_DELIVERY_HEIGHT = 70;
+/** End-of-wave bonus per survivor saved this wave: 100 x wave, capped at 500. */
 export const WAVE_BONUS_PER_MAN = 100;
+export const WAVE_BONUS_CAP = 500;
 
 // Scoring
 export const COMBO_WINDOW = 1.5;
@@ -136,6 +138,13 @@ export const EYE_BOMB_RADIUS = 5;
 
 // Waves
 export const MILESTONE_EVERY = 5;
+/** Every 5th wave is a Trailer invasion; the wave after each one (from wave 6) is a shipment. */
+export const INVASION_EVERY = 5;
+export const INVASION_BASE_TRAILERS = 6;
+export const INVASION_SPORES = 2;
+/** Waves above this replay the last cycle (100 plays as 95, 101 as 96, ...). */
+export const LAST_WAVE = 99;
+export const CYCLE_START = 95;
 export const WAVE_COMPLETE_TIME = 3;
 /** Seconds into a wave before any snatcher may target a man. */
 export const SNATCH_GRACE = 8;
