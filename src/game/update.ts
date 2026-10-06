@@ -13,6 +13,8 @@ export function update(s: GameState, a: Actions, dt: number): void {
   if (s.phase === 'gameOver') return;
   if (s.hitStop > 0) {
     s.hitStop = Math.max(0, s.hitStop - dt);
+    s.player.prevX = s.player.x;
+    s.player.prevY = s.player.y;
     return;
   }
   s.time += dt;

@@ -106,12 +106,14 @@ export class App {
   }
 
   step(dt: number): void {
+    let frozen = false;
     switch (this._scene) {
       case 'title':
         update(this.state, demoActions(this.state), dt);
         if (this.state.phase === 'gameOver') this.resetDemo();
         break;
       case 'playing':
+        frozen = this.state.hitStop > 0;
         update(this.state, this.actions, dt);
         if (this.state.phase === 'gameOver') {
           this._scene = 'gameOver';
@@ -126,7 +128,9 @@ export class App {
       case 'enterInitials':
         break;
     }
-    this.actions = consumeEdges(this.actions);
+    // A bomb pressed during hit-stop stays pending until a real sim step sees it.
+    const bomb = frozen && this.actions.bomb;
+    this.actions = { ...consumeEdges(this.actions), bomb };
   }
 
   frame(alpha: number, frameDt: number): void {

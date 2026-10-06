@@ -27,6 +27,16 @@ describe('update', () => {
     expect(s.hitStop).toBeCloseTo(0.05 - SIM_DT);
   });
 
+  it('snaps previous position to current during hit-stop (no interpolation jitter)', () => {
+    const s = createGameState(1);
+    s.hitStop = 0.05;
+    s.player.prevX = s.player.x - 10;
+    s.player.prevY = s.player.y - 10;
+    update(s, NO_ACTIONS, SIM_DT);
+    expect(s.player.prevX).toBe(s.player.x);
+    expect(s.player.prevY).toBe(s.player.y);
+  });
+
   it('does nothing after game over', () => {
     const s = createGameState(1);
     s.phase = 'gameOver';

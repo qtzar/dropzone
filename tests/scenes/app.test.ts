@@ -72,6 +72,19 @@ describe('App scenes', () => {
     expect(app.scene).toBe('playing');
   });
 
+  it('a bomb pressed during hit-stop fires on the next real step', () => {
+    const { app, press } = setup();
+    press({ confirm: true });
+    const bombs = app.game.bombs;
+    app.game.hitStop = 0.05;
+    press({ bomb: true });
+    expect(app.game.bombs).toBe(bombs);
+    for (let i = 0; i < 100 && app.game.hitStop > 0; i++) app.step(SIM_DT);
+    expect(app.game.hitStop).toBe(0);
+    app.step(SIM_DT);
+    expect(app.game.bombs).toBe(bombs - 1);
+  });
+
   it('pause() only pauses while playing', () => {
     const { app, press } = setup();
     app.pause();
