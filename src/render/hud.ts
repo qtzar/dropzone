@@ -81,6 +81,70 @@ function drawScanner(ctx: CanvasRenderingContext2D, s: GameState, camX: number):
   ctx.restore();
 }
 
+export type TrackerColor = 'onPlanet' | 'danger' | 'safe' | 'dead';
+
+export const TRACKER_COLORS: Record<TrackerColor, string> = {
+  onPlanet: '#3d8bff',
+  danger: '#ffd23d',
+  safe: '#4dff88',
+  dead: '#ff3b3b',
+};
+
+/** One entry per man in spawn order: on the planet, in danger (chased/falling), safe, or dead. */
+export function menTracker(s: GameState): TrackerColor[] {
+  return s.men.map((m): TrackerColor => {
+    switch (m.state) {
+      case 'saved':
+        return 'safe';
+      case 'dead':
+        return 'dead';
+      case 'chased':
+      case 'falling':
+        return 'danger';
+      case 'walking':
+      case 'carried':
+        return 'onPlanet';
+    }
+  });
+}
+
+const TRACKER_X = 132;
+const TRACKER_Y = 34;
+const TRACKER_STEP = 11;
+
+/** Row of stick-man icons to the right of the score. */
+function drawMenTracker(ctx: CanvasRenderingContext2D, s: GameState): void {
+  const colors = menTracker(s);
+  if (colors.length === 0) {
+    ctx.fillStyle = 'rgba(154,216,255,0.4)';
+    ctx.font = '10px monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText('NO SCIENTISTS', TRACKER_X, TRACKER_Y + 4);
+    return;
+  }
+  ctx.lineWidth = 1.5;
+  ctx.lineCap = 'round';
+  colors.forEach((c, i) => {
+    const x = TRACKER_X + 4 + i * TRACKER_STEP;
+    const y = TRACKER_Y;
+    ctx.strokeStyle = TRACKER_COLORS[c];
+    ctx.fillStyle = TRACKER_COLORS[c];
+    ctx.beginPath();
+    ctx.arc(x, y - 7, 2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(x, y - 5);
+    ctx.lineTo(x, y + 2);
+    ctx.moveTo(x - 3, y - 3);
+    ctx.lineTo(x + 3, y - 3);
+    ctx.moveTo(x, y + 2);
+    ctx.lineTo(x - 2.5, y + 7);
+    ctx.moveTo(x, y + 2);
+    ctx.lineTo(x + 2.5, y + 7);
+    ctx.stroke();
+  });
+}
+
 function drawLeftPanel(ctx: CanvasRenderingContext2D, s: GameState): void {
   ctx.textAlign = 'left';
   ctx.fillStyle = PALETTE.hud;
@@ -98,6 +162,7 @@ function drawLeftPanel(ctx: CanvasRenderingContext2D, s: GameState): void {
   ctx.fillStyle = PALETTE.hud;
   ctx.font = '12px monospace';
   ctx.fillText(`WAVE ${s.wave}`, 150, 66);
+  drawMenTracker(ctx, s);
 }
 
 /** HUD text for the shield bank, e.g. "SHIELD 12.4s". */
@@ -162,7 +227,7 @@ function drawCenterMessages(ctx: CanvasRenderingContext2D, s: GameState): void {
     ctx.fillText(`WAVE ${s.wave} COMPLETE`, VIEW_W / 2, 300);
     ctx.font = '20px monospace';
     ctx.fillStyle = PALETTE.man;
-    ctx.fillText(`MEN SAVED  ${s.savedThisWave}`, VIEW_W / 2, 350);
+    ctx.fillText(`SCIENTISTS SAVED  ${s.savedThisWave}`, VIEW_W / 2, 350);
     ctx.fillStyle = PALETTE.gold;
     ctx.fillText(`BONUS  ${s.lastWaveBonus}`, VIEW_W / 2, 384);
   }

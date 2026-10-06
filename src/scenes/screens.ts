@@ -48,7 +48,7 @@ function bar(value: number): string {
 export function drawTitle(ctx: CanvasRenderingContext2D, scores: readonly ScoreEntry[], time: number, settings: AudioSettings): void {
   dim(ctx, 0.55);
   glowText(ctx, 'DROPZONE', VIEW_W / 2, 200, 96, PALETTE.player);
-  glowText(ctx, 'RESCUE THE MEN  -  DESTROY THE ALIENS', VIEW_W / 2, 245, 18, PALETTE.hud);
+  glowText(ctx, 'RESCUE THE SCIENTISTS  -  DESTROY THE ALIENS', VIEW_W / 2, 245, 18, PALETTE.hud);
   if (Math.floor(time * 2) % 2 === 0) {
     glowText(ctx, 'PRESS ENTER / SPACE / START', VIEW_W / 2, 310, 22, PALETTE.gold);
   }

@@ -1,8 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { SCANNER, scannerPos, scannerTerrainOffsets, shieldLabel, waveBanner, BANNER_TIME } from '../../src/render/hud';
+import { SCANNER, scannerPos, scannerTerrainOffsets, shieldLabel, waveBanner, BANNER_TIME, menTracker, TRACKER_COLORS } from '../../src/render/hud';
 import { createGameState } from '../../src/game/state';
 import { WORLD_W, VIEW_H } from '../../src/core/world';
 import { CEILING_Y } from '../../src/game/constants';
+import { addMan } from '../game/helpers';
 
 describe('scannerPos', () => {
   const cx = SCANNER.x + SCANNER.w / 2;
@@ -67,5 +68,26 @@ describe('waveBanner', () => {
     s.wave = 2;
     s.phase = 'waveComplete';
     expect(waveBanner(s)).toBeNull();
+  });
+});
+
+describe('menTracker', () => {
+  it('lists every man in spawn order: blue on planet, yellow in danger, green safe, red dead', () => {
+    const s = createGameState(1);
+    addMan(s, 1000, 'walking');
+    addMan(s, 2000, 'saved');
+    addMan(s, 3000, 'chased');
+    addMan(s, 4000, 'dead');
+    addMan(s, 5000, 'carried');
+    addMan(s, 6000, 'falling');
+    expect(menTracker(s)).toEqual(['onPlanet', 'safe', 'danger', 'dead', 'onPlanet', 'danger']);
+  });
+
+  it('is empty when the wave has no men', () => {
+    expect(menTracker(createGameState(1))).toEqual([]);
+  });
+
+  it('uses the agreed colours', () => {
+    expect(TRACKER_COLORS).toEqual({ onPlanet: '#3d8bff', danger: '#ffd23d', safe: '#4dff88', dead: '#ff3b3b' });
   });
 });
