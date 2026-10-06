@@ -1,0 +1,95 @@
+import { describe, it, expect } from 'vitest';
+import { createGameState } from '../../../src/game/state';
+import { NO_ACTIONS } from '../../../src/core/input';
+import { updateCloak, triggerBomb, updateRespawn, RESPAWN_Y } from '../../../src/game/systems/powerups';
+import { CLOAK_DRAIN, RESPAWN_DELAY, RESPAWN_INVULN, START_BOMBS, HITSTOP_MULTI } from '../../../src/game/constants';
+import { addEnemy } from '../helpers';
+
+const CLOAK = { ...NO_ACTIONS, cloak: true };
+
+describe('updateCloak', () => {
+  it('activates while held and drains the meter', () => {
+    const s = createGameState(1);
+    updateCloak(s, CLOAK, 1);
+    expect(s.player.cloakActive).toBe(true);
+    expect(s.player.cloak).toBeCloseTo(1 - CLOAK_DRAIN);
+    expect(s.events).toContainEqual({ type: 'cloakOn' });
+  });
+
+  it('deactivates on release and emits cloakOff', () => {
+    const s = createGameState(1);
+    updateCloak(s, CLOAK, 0.1);
+    updateCloak(s, NO_ACTIONS, 0.1);
+    expect(s.player.cloakActive).toBe(false);
+    expect(s.events).toContainEqual({ type: 'cloakOff' });
+  });
+
+  it('turns off when the meter is empty', () => {
+    const s = createGameState(1);
+    s.player.cloak = 0.01;
+    updateCloak(s, CLOAK, 1);
+    expect(s.player.cloak).toBe(0);
+    updateCloak(s, CLOAK, 0.01);
+    expect(s.player.cloakActive).toBe(false);
+  });
+
+  it('does not activate while dead', () => {
+    const s = createGameState(1);
+    s.player.alive = false;
+    updateCloak(s, CLOAK, 0.1);
+    expect(s.player.cloakActive).toBe(false);
+  });
+});
+
+describe('triggerBomb', () => {
+  it('kills on-screen enemies, spares distant ones, clears nearby shots', () => {
+    const s = createGameState(1);
+    const near1 = addEnemy(s, 'snatcher', s.player.x + 300, 300);
+    const near2 = addEnemy(s, 'nemesite', s.player.x - 500, 300);
+    const far = addEnemy(s, 'snatcher', s.player.x + 3000, 300);
+    s.shots.push({ x: s.player.x + 100, y: 300, vx: 0, vy: 0, life: 1 });
+    s.shots.push({ x: s.player.x + 3000, y: 300, vx: 0, vy: 0, life: 1 });
+    expect(triggerBomb(s)).toBe(true);
+    expect(near1.dead).toBe(true);
+    expect(near2.dead).toBe(true);
+    expect(far.dead).toBe(false);
+    expect(s.shots).toHaveLength(1);
+    expect(s.bombs).toBe(START_BOMBS - 1);
+    expect(s.hitStop).toBe(HITSTOP_MULTI);
+    expect(s.events.some((e) => e.type === 'bombDetonated')).toBe(true);
+  });
+
+  it('does nothing without bombs or while dead', () => {
+    const s = createGameState(1);
+    s.bombs = 0;
+    expect(triggerBomb(s)).toBe(false);
+    s.bombs = 1;
+    s.player.alive = false;
+    expect(triggerBomb(s)).toBe(false);
+    expect(s.bombs).toBe(1);
+  });
+});
+
+describe('updateRespawn', () => {
+  it('respawns after the delay with invulnerability', () => {
+    const s = createGameState(1);
+    s.player.alive = false;
+    s.player.respawnTimer = RESPAWN_DELAY;
+    updateRespawn(s, RESPAWN_DELAY - 0.1);
+    expect(s.player.alive).toBe(false);
+    updateRespawn(s, 0.2);
+    expect(s.player.alive).toBe(true);
+    expect(s.player.y).toBe(RESPAWN_Y);
+    expect(s.player.invuln).toBe(RESPAWN_INVULN);
+    expect(s.events.some((e) => e.type === 'playerRespawned')).toBe(true);
+  });
+
+  it('does not respawn after game over', () => {
+    const s = createGameState(1);
+    s.player.alive = false;
+    s.player.respawnTimer = 0;
+    s.phase = 'gameOver';
+    updateRespawn(s, 1);
+    expect(s.player.alive).toBe(false);
+  });
+});
