@@ -88,7 +88,17 @@ export class App {
   }
 
   pause(): void {
-    if (this._scene === 'playing') this._scene = 'paused';
+    if (this._scene === 'playing') this.enterPause();
+  }
+
+  private enterPause(): void {
+    this._scene = 'paused';
+    this.audio.setPaused(true);
+  }
+
+  private leavePause(): void {
+    this._scene = 'playing';
+    this.audio.setPaused(false);
   }
 
   timeScale(): number {
@@ -150,10 +160,10 @@ export class App {
         if (a.confirm) this.startGame();
         break;
       case 'playing':
-        if (a.pause) this._scene = 'paused';
+        if (a.pause) this.enterPause();
         break;
       case 'paused':
-        if (a.pause || a.confirm) this._scene = 'playing';
+        if (a.pause || a.confirm) this.leavePause();
         break;
       case 'gameOver':
         if (a.confirm && this.gameOverTimer < GAME_OVER_TIME - 1) this.gameOverTimer = 0;

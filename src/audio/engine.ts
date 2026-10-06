@@ -14,6 +14,7 @@ export class AudioEngine {
   musicBus: GainNode | null = null;
   private master: GainNode | null = null;
   private noise: AudioBuffer | null = null;
+  private paused = false;
   private settings: AudioSettings = { ...DEFAULT_AUDIO_SETTINGS };
 
   /** Must be called from a user gesture (keydown/click/gamepad press). Safe to call repeatedly. */
@@ -38,7 +39,19 @@ export class AudioEngine {
         return;
       }
     }
-    if (this.ctx.state === 'suspended') void this.ctx.resume().catch(() => undefined);
+    if (!this.paused && this.ctx.state !== 'running') void this.ctx.resume().catch(() => undefined);
+  }
+
+  /** Suspends or resumes the audio clock; remembered so unlock() does not resume while paused. */
+  setPaused(paused: boolean): void {
+    this.paused = paused;
+    const ctx = this.ctx;
+    if (!ctx) return;
+    try {
+      void (paused ? ctx.suspend() : ctx.resume()).catch(() => undefined);
+    } catch {
+      /* ignore */
+    }
   }
 
   get ready(): boolean {
