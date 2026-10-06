@@ -140,4 +140,7 @@ A row of small stick-man icons to the right of the score (x 132–220, y ≈ 27�
 - **Yellow `#ffd23d`**: in danger (chased by an Android, or falling).
 - **Green `#4dff88`**: safe (delivered or self-rescued).
 - **Red `#ff3b3b`**: dead.
-- With no men in the wave (invasion waves, after the planet went unstable): dim `NO MEN` text instead.
+- With no men in the wave (invasion waves, after the planet went unstable): dim `NO SCIENTISTS` text instead.
+
+### A3. "Scientists", not "men"
+All player-facing text calls the people to rescue **scientists** (title tagline, wave-complete tally, popups, tracker, debug overlay). Code identifiers (`Man`, `men`, `MAN_*`) are unchanged.
